@@ -1,6 +1,5 @@
 const util = require('./Util.js');
 
-
 function MarkNumber(aBoard, aNumber) {
   for (let i = 0; i < aBoard.length; i++)
     for (let j = 0; j < aBoard[i].length; j++)
@@ -20,7 +19,7 @@ function FindBingo(aBoard, aNumber) {
     }
     if (countLine == aBoard[i].length)
       return true;
-    
+
     if (countCol == aBoard[i].length)
       return true;
   }
@@ -40,14 +39,14 @@ function ComputeScore(aBoard, aNumber) {
 }
 
 function Analize(aNumbers) {
-  
+
   let scores = [];
   let firstScore = 0;
   let lastScore = 0;
   for (let k = 0; k < aNumbers.length; k++)
     scores.push(0);
 
-  for (let i = 0; i < aNumbers[0].length;i++)
+  for (let i = 0; i < aNumbers[0].length; i++)
     for (let j = 1; j < aNumbers.length; j++) {
       MarkNumber(aNumbers[j], aNumbers[0][i]);
 
@@ -56,27 +55,27 @@ function Analize(aNumbers) {
           scores[j] = ComputeScore(aNumbers[j], aNumbers[0][i]);
           if (firstScore == 0)
             firstScore = scores[j];
-          else 
+          else
             lastScore = scores[j];
         }
     }
-  return {first: firstScore, last: lastScore };
+  return { first: firstScore, last: lastScore };
 }
 
 let numbers = util.MapInput('./Day4Input.txt', (aElem, aIndex) => {
 
   if (aIndex == 0)
-    return aElem.split(',').map((aNumber)=>{return parseInt(aNumber);});
-  else   
-    return aElem.split('\r\n').map((aLine)=>{ 
-      let rawLine = aLine.split(' ').map((aa)=>{ 
+    return aElem.split(',').map((aNumber) => { return parseInt(aNumber); });
+  else
+    return aElem.split('\r\n').map((aLine) => {
+      let rawLine = aLine.split(' ').map((aa) => {
         return parseInt(aa.trim());
       });
-      
+
       let newLine = [];
       for (let i = 0; i < rawLine.length; i++)
         if (rawLine[i] >= 0)
-          newLine.push({v: rawLine[i], d: false});
+          newLine.push({ v: rawLine[i], d: false });
       return newLine;
     });
 }, '\r\n\r\n');
@@ -85,4 +84,3 @@ let score = Analize(numbers);
 
 console.log(score.first);
 console.log(score.last);
-  
