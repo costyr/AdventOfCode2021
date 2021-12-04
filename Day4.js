@@ -10,21 +10,19 @@ function MarkNumber(aBoard, aNumber) {
 
 function FindBingo(aBoard, aNumber) {
   for (let i = 0; i < aBoard.length; i++) {
-    let count = 0;
-    for (let j = 0; j < aBoard[i].length; j++)
+    let countLine = 0;
+    let countCol = 0;
+    for (let j = 0; j < aBoard[i].length; j++) {
       if (aBoard[i][j].d)
-        count++;
-    if (count == aBoard[i].length)
-      return true;    
-  }
-  
-  for (let i = 0; i < aBoard.length; i++) {
-    let count = 0;
-    for (let j = 0; j < aBoard[i].length; j++)
+        countLine++;
       if (aBoard[j][i].d)
-        count++;
-    if (count == aBoard[i].length)
-      return true;    
+        countCol++;
+    }
+    if (countLine == aBoard[i].length)
+      return true;
+    
+    if (countCol == aBoard[i].length)
+      return true;
   }
 
   return false;
@@ -44,21 +42,25 @@ function ComputeScore(aBoard, aNumber) {
 function Analize(aNumbers) {
   
   let scores = [];
-
+  let firstScore = 0;
+  let lastScore = 0;
   for (let k = 0; k < aNumbers.length; k++)
-    scores.push( { s: 0, c: 0});
+    scores.push(0);
 
   for (let i = 0; i < aNumbers[0].length;i++)
     for (let j = 1; j < aNumbers.length; j++) {
       MarkNumber(aNumbers[j], aNumbers[0][i]);
 
       if (FindBingo(aNumbers[j], aNumbers[0][i]))
-        if (scores[j].s == 0) {
-          scores[j].s = ComputeScore(aNumbers[j], aNumbers[0][i]);
-          scores[j].c = i;
+        if (scores[j] == 0) {
+          scores[j] = ComputeScore(aNumbers[j], aNumbers[0][i]);
+          if (firstScore == 0)
+            firstScore = scores[j];
+          else 
+            lastScore = scores[j];
         }
     }
-  return scores;
+  return {first: firstScore, last: lastScore };
 }
 
 let numbers = util.MapInput('./Day4Input.txt', (aElem, aIndex) => {
@@ -79,24 +81,8 @@ let numbers = util.MapInput('./Day4Input.txt', (aElem, aIndex) => {
     });
 }, '\r\n\r\n');
 
-let rr = Analize(numbers);
+let score = Analize(numbers);
 
-let max = 0;
-let min = Number.MAX_SAFE_INTEGER;
-let lastScore = 0;
-let firstScore = 0;
-for (let i = 1; i < rr.length;i++) {
-  if (rr[i].c > max) {
-    lastScore = rr[i].s;
-    max = rr[i].c;
-  }
-
-  if (rr[i].c < min) {
-    firstScore = rr[i].s;
-    min = rr[i].c;
-  }
-}
-
-console.log(firstScore);
-console.log(lastScore);
+console.log(score.first);
+console.log(score.last);
   
