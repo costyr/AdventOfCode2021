@@ -27,8 +27,8 @@ function DrawLine(aMap, aLineCoords, aDrawAllLines) {
     }
 
     for (let i = startX; i <= endX; i++) {
-      let val = aMap.GetValue(i, aLineCoords.y1);
-      aMap.SetValue(i, aLineCoords.y1, val + 1);
+      let val = aMap.GetValue(aLineCoords.y1, i);
+      aMap.SetValue(aLineCoords.y1, i, val + 1);
     }
   }
   else if (IsVertLine(aLineCoords)) {
@@ -41,8 +41,8 @@ function DrawLine(aMap, aLineCoords, aDrawAllLines) {
     }
 
     for (let i = startY; i <= endY; i++) {
-      let val = aMap.GetValue(aLineCoords.x1, i);
-      aMap.SetValue(aLineCoords.x1, i, val + 1);
+      let val = aMap.GetValue(i, aLineCoords.x1);
+      aMap.SetValue(i, aLineCoords.x1, val + 1);
     }
   }
   else if (aDrawAllLines) {
@@ -58,27 +58,27 @@ function DrawLine(aMap, aLineCoords, aDrawAllLines) {
     if (x1 < x2) {
       if (y1 < y2) {
         for (; i <= x2 && j <= y2; i++, j++) {
-          let val = aMap.GetValue(i, j);
-          aMap.SetValue(i, j, val + 1);
+          let val = aMap.GetValue(j, i);
+          aMap.SetValue(j, i, val + 1);
         }
       }
       else
         for (; i <= x2 && j >= y2; i++, j--) {
-          let val = aMap.GetValue(i, j);
-          aMap.SetValue(i, j, val + 1);
+          let val = aMap.GetValue(j, i);
+          aMap.SetValue(j, i, val + 1);
         }
     }
     else {
       if (y1 < y2) {
         for (; i >= x2 && j <= y2; i--, j++) {
-          let val = aMap.GetValue(i, j);
-          aMap.SetValue(i, j, val + 1);
+          let val = aMap.GetValue(j, i);
+          aMap.SetValue(j, i, val + 1);
         }
       }
       else
         for (; i >= x2 && j >= y2; i--, j--) {
-          let val = aMap.GetValue(i, j);
-          aMap.SetValue(i, j, val + 1);
+          let val = aMap.GetValue(j, i);
+          aMap.SetValue(j, i, val + 1);
         }
     }
   }
@@ -97,6 +97,7 @@ function DrawLines(aLines, aWidth, aHeight, aDrawAllLines) {
       if (map.mMatix[i][j] > 1)
         count++;
 
+  //map.Print('', (aElem)=>{  return aElem == 0 ? '.' : aElem;});
   return count;
 }
 
