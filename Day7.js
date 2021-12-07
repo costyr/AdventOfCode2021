@@ -1,25 +1,5 @@
 const util = require('./Util.js');
 
-function SimulateFishGrouth(aFishTimer, aCiclesCount, aIsFirst) {
-  let sum = aIsFirst ? 1 : 0;
-
-  if (aCiclesCount <= aFishTimer)
-    return 0;
-
-  let pp = (aCiclesCount - aFishTimer) / 7;
-
-  if ((aCiclesCount - aFishTimer) % 7 == 0)
-    pp--;
-
-  for (let i = 0; i <= pp; i++) {
-    sum += SimulateFishGrouth(8, aCiclesCount - (i * 7 + aFishTimer + 1));
-
-    sum += 1;
-  }
-
-  return sum;
-}
-
 function ComputeCost(aSteps) {
   let cost = 0;
   for (let i = 1; i <= aSteps; i++)
@@ -27,25 +7,21 @@ function ComputeCost(aSteps) {
   return cost;
 }
 
-function FindBestPos(aCrabPositions) {
+function FindBestPos(aCrabPositions, aMaxPos, aSimpleCost) {
 
   let min = Number.MAX_SAFE_INTEGER;
-  for (let i = 0; i < 2000; i++) {
+  for (let i = 0; i <= aMaxPos; i++) {
 
     let sum = 0
-    for (let j = 0; j <= aCrabPositions.length; j++)
-     /*if (i != j)*/ {
-      let cc = ComputeCost(Math.abs(aCrabPositions[j] - i));
-      //console.log(cc);
-       sum += cc;
-     }
+    for (let j = 0; j < aCrabPositions.length; j++) {
+      let cc = aSimpleCost ? Math.abs(aCrabPositions[j] - i) : ComputeCost(Math.abs(aCrabPositions[j] - i));
+      sum += cc;
+    }
 
     if (sum < min)
       min = sum;
+  }
 
-    console.log(i + " " + sum);
-    }
-   
   return min;
 }
 
@@ -53,4 +29,10 @@ let crabPositions = util.MapInput('./Day7Input.txt', (aElem) => {
   return parseInt(aElem);
 }, ',');
 
-console.log(FindBestPos(crabPositions));
+let maxPos = 0;
+for (let i = 0; i < crabPositions.length; i++)
+  if (crabPositions[i] > maxPos)
+    maxPos = crabPositions[i];
+
+console.log(FindBestPos(crabPositions, maxPos, true));
+console.log(FindBestPos(crabPositions, maxPos, false));
