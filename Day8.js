@@ -11,7 +11,9 @@ function Analize(aSegments) {
 }
 
 function Decode(aEncodingMap) {
-     
+  for (let key in aEncodingMap) {
+    console.log(key + "=>" + aEncodingMap[key]);
+  }   
 }
 
 function Analize2(aSegments) {
@@ -34,24 +36,14 @@ function Analize2(aSegments) {
       else if (aSegments[i].l[j].length == 7) 
         encodingMap[ff] = { code: 8, p: [] };
     }
+
+    console.log(encodingMap);
     
     Decode(encodingMap);
   }              
 }
 
-function Analize3(aSegments) {
-  for (let i = 0; i < aSegments.length; i++) {
-
-    let tt = 0;
-    for (let j = 0; j < aSegments[i].l.length; j++)
-    {
-      let pp = aSegments[i].r[j].split('').sort().join();
-      tt += j 
-    }  
-  }              
-}
-
-let segments = util.MapInput('./Day8Input.txt', (aElem) => {
+let segments = util.MapInput('./Day8TestInput2.txt', (aElem) => {
   let raw = aElem.split(' | ');
   return { l: raw[0].split(' ').map(aElem => aElem.split('').sort().join('')), r: raw[1].split(' ').map(aElem => aElem.split('').sort().join(''))};
 }, '\r\n');
