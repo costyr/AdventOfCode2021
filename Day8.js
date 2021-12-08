@@ -77,42 +77,23 @@ function Decode(aEncodingMap) {
         value.code = 3;
         value.p = [3];
       }
-    }
-
-  }
-
-  for (let key in aEncodingMap) {
-
-    let value = aEncodingMap[key];
-
-    if (value.code == -1) {
-      let nn1 = key.split('');
-      nn1.push(key1.key[0]);
-      let nn1_ = nn1.sort().join('');
-
-      let nn2 = key.split('');
-      nn2.push(key1.key[1]);
-      let nn2_ = nn2.sort().join('');
-
-      if (nn1_ == key9.key || nn2_ == key9.key) {
-        value.code = 5;
-        value.p = [5]
+      else {
+        let nn1 = (key + key1.key[0]).split('').sort().join('');
+        let nn2 = (key + key1.key[1]).split('').sort().join('');
+  
+        if (nn1 == key9.key || nn2 == key9.key) {
+          value.code = 5;
+          value.p = [5]
+        }
+        else
+        {
+          value.code = 2;
+          value.p = [2]
+        }
       }
     }
 
   }
-
-  for (let key in aEncodingMap) {
-
-    let value = aEncodingMap[key];
-
-    if (value.code == -1) {
-      value.code = 2;
-      value.p = [2]
-    }
-  }
-
-  //console.log(aEncodingMap);
 }
 
 function Analize2(aSegments) {
@@ -139,15 +120,9 @@ function Analize2(aSegments) {
 
     Decode(encodingMap);
 
-    let factor = 1000;
     let number = 0;
-    for (let j = 0; j < aSegments[i].r.length; j++) {
-
-      let ff = aSegments[i].r[j];
-
-      number += factor * encodingMap[ff].code;
-      factor /= 10;
-    }
+    for (let j = 0; j < aSegments[i].r.length; j++) 
+      number = 10 * number + encodingMap[aSegments[i].r[j]].code;
 
     total += number;
 
@@ -160,8 +135,6 @@ let segments = util.MapInput('./Day8Input.txt', (aElem) => {
   let raw = aElem.split(' | ');
   return { l: raw[0].split(' ').map(aElem => aElem.split('').sort().join('')), r: raw[1].split(' ').map(aElem => aElem.split('').sort().join('')) };
 }, '\r\n');
-
-//console.log(segments);
 
 console.log(Analize(segments));
 
