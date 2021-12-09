@@ -80,13 +80,12 @@ function Decode(aEncodingMap) {
       else {
         let nn1 = (key + key1.key[0]).split('').sort().join('');
         let nn2 = (key + key1.key[1]).split('').sort().join('');
-  
+
         if (nn1 == key9.key || nn2 == key9.key) {
           value.code = 5;
           value.p = [5]
         }
-        else
-        {
+        else {
           value.code = 2;
           value.p = [2]
         }
@@ -121,7 +120,7 @@ function Analize2(aSegments) {
     Decode(encodingMap);
 
     let number = 0;
-    for (let j = 0; j < aSegments[i].r.length; j++) 
+    for (let j = 0; j < aSegments[i].r.length; j++)
       number = 10 * number + encodingMap[aSegments[i].r[j]].code;
 
     total += number;
