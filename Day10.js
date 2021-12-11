@@ -7,7 +7,7 @@ function ComputeErrorScore(aError) {
   let total = 0;
   for (let i = aError.length - 1; i >= 0; i--)
     total = total * 5 + score.indexOf(aError[i]) + 1;
-      
+
   return total;
 }
 
@@ -18,38 +18,35 @@ function ComputeScore(aLine) {
   for (let i = 0; i < aLine.length; i++) {
     if (ss.indexOf(aLine[i]) != -1)
       stack.push(aLine[i]);
-    else
-    {
+    else {
       let top = stack[stack.length - 1];
 
-      if ((top == '[' && aLine[i] == ']') || 
-          (top == '{' && aLine[i] == '}') || 
-          (top == '(' && aLine[i] == ')') || 
-          (top == '<' && aLine[i] == '>'))
-       stack.pop();
-      else{
-
-        if (aLine[i]== ')')
-        return  {d: 0, s: 3};
-      else if (aLine[i] == ']')
-        return { d: 0, s: 57 };
-      else if (aLine[i] == '}')
-        return { d: 0, s: 1197 };
-      else 
-        return  { d: 0, s: 25137} ;
+      if ((top == '[' && aLine[i] == ']') ||
+        (top == '{' && aLine[i] == '}') ||
+        (top == '(' && aLine[i] == ')') ||
+        (top == '<' && aLine[i] == '>'))
+        stack.pop();
+      else {
+        if (aLine[i] == ')')
+          return { d: 0, s: 3 };
+        else if (aLine[i] == ']')
+          return { d: 0, s: 57 };
+        else if (aLine[i] == '}')
+          return { d: 0, s: 1197 };
+        else
+          return { d: 0, s: 25137 };
       }
-    }     
+    }
   }
 
-  return { d: 1, s: ComputeErrorScore(stack)};  
+  return { d: 1, s: ComputeErrorScore(stack) };
 }
 
 function Analize(aNavSintax) {
   let total = 0;
   let incompleteScores = [];
-  for (let i = 0; i < aNavSintax.length; i++)
-  {
-    let ss =  ComputeScore(aNavSintax[i]);
+  for (let i = 0; i < aNavSintax.length; i++) {
+    let ss = ComputeScore(aNavSintax[i]);
 
     if (ss.d == 0)
       total += ss.s;
@@ -61,7 +58,7 @@ function Analize(aNavSintax) {
 
   let midScoreIndex = Math.floor(incompleteScores.length / 2);
 
-  return {part1: total, part2: incompleteScores[midScoreIndex] };
+  return { part1: total, part2: incompleteScores[midScoreIndex] };
 }
 
 let navSintax = util.MapInput('./Day10Input.txt', (aElem) => {
