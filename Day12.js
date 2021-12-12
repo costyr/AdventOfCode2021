@@ -57,26 +57,6 @@ function IsValidPath2(aPath) {
   return true;
 }
 
-function HasPath(aPaths, aPath) {
-  for (let i = 0; i < aPaths.length; i++) {
-
-
-    if (aPath.length != aPaths[i].length)
-      continue;
-
-    let found = true;
-    for (let j = 0; j < aPaths.length; j++)
-      if (aPath[j] != aPaths[i][j]) {
-        found = false;
-        break;
-      }
-
-    if (found)
-      return true;
-  }
-  return false;
-}
-
 function BFS(aGraph, aPart1) {
   let queue = [{ n: 'start', p: ['start'] }];
   let total = 0;
