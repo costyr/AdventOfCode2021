@@ -32,9 +32,9 @@ function ParseInt(aElem) {
 }
 
 function SplitInput(aFilePath, aSep) {
-  let rawInput = fs.readFileSync(aFilePath);
+  let rawInput = fs.readFileSync(aFilePath, 'utf-8');
 
-  return rawInput.toString().split(aSep);
+  return rawInput.split(aSep);
 }
 
 function ReduceInput(aFilePath, aElemFunc, aTotal, aSep) {

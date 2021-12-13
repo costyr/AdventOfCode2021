@@ -6,7 +6,7 @@ function FoldY(aPaper, aPos) {
     for (let j = 0; j < aPaper.mMatix[i].length; j++) {
       if (i > aPos && aPaper.GetValue(i, j) == '#') {
         aPaper.SetValue(i, j, '.');
-        aPaper.SetValue(aPaper.mMatix.length - i - 1, j, '#');
+        aPaper.SetValue(aPos - (i - aPos), j, '#');
       }
     }
 
@@ -18,7 +18,7 @@ function FoldX(aPaper, aPos) {
     for (let j = 0; j < aPaper.mMatix[i].length; j++) {
       if (j > aPos && aPaper.GetValue(i, j) == '#') {
         aPaper.SetValue(i, j, '.');
-        aPaper.SetValue(i, aPaper.mMatix[0].length - j - 1, '#');
+        aPaper.SetValue(i, aPos - (j - aPos), '#');
       }
     }
   }
@@ -26,22 +26,8 @@ function FoldX(aPaper, aPos) {
     aPaper.mMatix[i].splice(aPos);
 }
 
-function MarkPoints(aCoords, aFolds) {
-
-  let maxX = 0;
-  let maxY = 0;
-  for (let i = 0; i < aFolds.length; i++) {
-    if (aFolds[i].dir) {
-      if (aFolds[i].pos > maxX)
-        maxX = aFolds[i].pos;
-    }
-    else {
-      if (aFolds[i].pos > maxY)
-        maxY = aFolds[i].pos;
-    }
-  }
-
-  let paper = new alg.Matrix(maxX * 2 + 1, maxY * 2 + 1, '.');
+function MarkPoints(aCoords, aSize) {
+  let paper = new alg.Matrix(aSize.x + 1, aSize.y + 1, '.');
 
   for (let i = 0; i < aCoords.length; i++)
     paper.SetValue(aCoords[i].y, aCoords[i].x, '#');
@@ -64,16 +50,32 @@ function Fold(aPaper, aFolds, aFoldsCount) {
   return firstFoldCount;
 }
 
-let insts = util.MapInput('./Day13Input.txt', (aElem, aIndex) => {
+let max = {x: 0, y: 0 };
 
-  if (aIndex == 0)
-    return aElem.split('\r\n').map(a => { let rr = a.split(','); return { x: parseInt(rr[0]), y: parseInt(rr[1]) }; });
+let insts = util.MapInput('./Day13Input.txt', ((aMax, aElem, aIndex) => {
+
+  if (aIndex == 0) {
+    let coord = aElem.split('\r\n').map(((aMax, a) => { let rr = a.split(','); 
+      let x = parseInt(rr[0]);
+      let y = parseInt(rr[1]);
+
+      if (x > aMax.x)
+        aMax.x = x;
+
+      if (y > aMax.y)
+        aMax.y = y; 
+
+      return { x: x, y: y };
+    }).bind(null, aMax));
+
+    return coord;
+  }
   else
     return aElem.split('\r\n').map(a => { let rr = a.split('='); return { dir: (rr[0] == 'fold along x'), pos: parseInt(rr[1]) }; });
 
-}, '\r\n\r\n');
+}).bind(null, max), '\r\n\r\n');
 
-let paper = MarkPoints(insts[0], insts[1]);
+let paper = MarkPoints(insts[0], max);
 
 let firstFoldCount = Fold(paper, insts[1], insts[1].length);
 
