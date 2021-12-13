@@ -29,33 +29,34 @@ function FoldX(aPaper, aPos) {
 function MarkPoints(aCoords, aSize) {
   let paper = new alg.Matrix(aSize.x + 1, aSize.y + 1, '.');
 
-  for (let i = 0; i < aCoords.length; i++)
-    paper.SetValue(aCoords[i].y, aCoords[i].x, '#');
+  aCoords.map((aCoord)=>{
+    paper.SetValue(aCoord.y, aCoord.x, '#');}, this);
 
   return paper;
 }
 
 function Fold(aPaper, aFolds, aFoldsCount) {
-  let firstFoldCount = 0
-  for (let i = 0; i < aFoldsCount; i++) {
-    if (aFolds[i].dir)
-      FoldX(aPaper, aFolds[i].pos);
+  let firstFoldCount = 0;
+  aFolds.splice(0, Math.min(aFolds.length, aFoldsCount)).map((aFold, aIndex) => {
+    if (aFold.dir)
+      FoldX(aPaper, aFold.pos);
     else
-      FoldY(aPaper, aFolds[i].pos);
+      FoldY(aPaper, aFold.pos);
 
-    if (i == 0)
+    if (aIndex == 0)
       firstFoldCount = aPaper.CountElement('#');
-  }
+  }, this);
 
   return firstFoldCount;
 }
 
-let max = {x: 0, y: 0 };
+let max = { x: 0, y: 0 };
 
 let insts = util.MapInput('./Day13Input.txt', ((aMax, aElem, aIndex) => {
 
   if (aIndex == 0) {
-    let coord = aElem.split('\r\n').map(((aMax, a) => { let rr = a.split(','); 
+    let coord = aElem.split('\r\n').map(((aMax, a) => {
+      let rr = a.split(',');
       let x = parseInt(rr[0]);
       let y = parseInt(rr[1]);
 
@@ -63,7 +64,7 @@ let insts = util.MapInput('./Day13Input.txt', ((aMax, aElem, aIndex) => {
         aMax.x = x;
 
       if (y > aMax.y)
-        aMax.y = y; 
+        aMax.y = y;
 
       return { x: x, y: y };
     }).bind(null, aMax));
