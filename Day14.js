@@ -36,7 +36,7 @@ function CreatePolimer(aTemplate, aInsts, aStepCount) {
       min = oo[key];
   }
 
-  return max - min;
+  return oo['B']  - ((oo['H'] === undefined) ? 0 : oo['H']);
 }
 
 function InvertRules(aInsts) {
@@ -119,19 +119,19 @@ let invInsts = InvertRules(insts[1]);
 
 console.log(invInsts);
 
-//let ret = CreatePolimer(insts[0], insts[1], 10);
+//let ret = CreatePolimer(['C', 'B'], insts[1], 10);
 
 //console.log(ret);
 
-ret = CreatePolimer2(['N', 'N'], insts[1], invInsts, 10);
+ret = CreatePolimer(['N', 'N'], insts[1], 10);
 
 console.log(ret);
 
-ret = CreatePolimer2(['N', 'C'], insts[1], invInsts, 10);
+ret = CreatePolimer(['N', 'C'], insts[1], 10);
 
 console.log(ret);
 
-ret = CreatePolimer2(['C', 'B'], insts[1], invInsts, 10);
+ret = CreatePolimer(['C', 'B'], insts[1], 10);
 
 console.log(ret);
 
