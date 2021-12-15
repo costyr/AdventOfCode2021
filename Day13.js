@@ -29,8 +29,9 @@ function FoldX(aPaper, aPos) {
 function MarkPoints(aCoords, aSize) {
   let paper = new alg.Matrix(aSize.x + 1, aSize.y + 1, '.');
 
-  aCoords.map((aCoord)=>{
-    paper.SetValue(aCoord.y, aCoord.x, '#');}, this);
+  aCoords.map((aCoord) => {
+    paper.SetValue(aCoord.y, aCoord.x, '#');
+  }, this);
 
   return paper;
 }
