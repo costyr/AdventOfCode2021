@@ -76,13 +76,13 @@ ExtendMapDown(rawRiskMap);
 
 let graph = CreateGraph(rawRiskMap);
 
-let dist = FindShortestPath(graph, {x: 0, y:0}, {x: rawRiskMap[0].length / 5 - 1, y: rawRiskMap.length / 5 - 1});
+let dist = FindShortestPath(graph, { x: 0, y: 0 }, { x: rawRiskMap[0].length / 5 - 1, y: rawRiskMap.length / 5 - 1 });
 
 console.log(dist);
 
 console.log("Part 2 will take a while. Please wait...");
 
-dist = FindShortestPath(graph, {x: 0, y:0}, {x: rawRiskMap[0].length - 1, y: rawRiskMap.length - 1});
+dist = FindShortestPath(graph, { x: 0, y: 0 }, { x: rawRiskMap[0].length - 1, y: rawRiskMap.length - 1 });
 
 console.log(dist);
 
