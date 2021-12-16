@@ -1,15 +1,13 @@
 const util = require('./Util.js');
 
-function AddF(...aArgs) 
-{
+function AddF(...aArgs) {
   let total = 0;
   for (let i = 0; i < arguments.length; i++)
     total += arguments[i];
   return total;
 }
 
-function MulF(...aArgs) 
-{
+function MulF(...aArgs) {
   let total = 1;
   for (let i = 0; i < arguments.length; i++)
     total *= arguments[i];
@@ -60,96 +58,120 @@ function GetOp(aType) {
   return "";
 }
 
+function EvalOp(aType, ...aArgs) {
+  if (aType == 0)
+    return AddF(...aArgs);
+  else if (aType == 1)
+    return MulF(...aArgs);
+  else if (aType == 2)
+    return MinF(...aArgs);
+  else if (aType == 3)
+    return MaxF(...aArgs);
+  else if (aType == 5)
+    return GreaterThanF(...aArgs);
+  else if (aType == 6)
+    return LessThanF(...aArgs);
+  else if (aType == 7)
+    return EqualF(...aArgs);
+  return 0;
+}
+
 function DecodePackage(aRawPackets, aTotal) {
 
   if (aRawPackets.length == 0)
-    return { l : 0, exp: '' };
+    return { l: 0, exp: '', ret: 0 };
 
-   let version = parseInt(aRawPackets.substring(0, 3), 2);
-   let type = parseInt(aRawPackets.substring(3, 6), 2);
+  let version = parseInt(aRawPackets.substring(0, 3), 2);
+  let type = parseInt(aRawPackets.substring(3, 6), 2);
 
-   aTotal.verSum += version;
+  aTotal.verSum += version;
 
-   if (type != 4)
-   {
-     let lengthType = parseInt(aRawPackets.substring(6, 7), 10);
+  if (type != 4) {
+    let lengthType = parseInt(aRawPackets.substring(6, 7), 10);
 
-     let packageLength = 3 + 3 + 1;
-     if (lengthType == 0)
-     {
-       let pp = aRawPackets.substring(7, 22);
-       let totalSubPackLength = parseInt(pp, 2);
+    let packageLength = 3 + 3 + 1;
+    if (lengthType == 0) {
+      let pp = aRawPackets.substring(7, 22);
+      let totalSubPackLength = parseInt(pp, 2);
 
-       //console.log("ss " + subPackLength);
+      //console.log("ss " + subPackLength);
 
-       let offset = packageLength + 15;
-       let subPackLength = totalSubPackLength;
+      let offset = packageLength + 15;
+      let subPackLength = totalSubPackLength;
 
-       let exp = '';
-       while (subPackLength > 0) {
-         let dd = DecodePackage(aRawPackets.substring(offset), total);
-         subPackLength -= dd.l;
-         offset += dd.l;
+      let exp = '';
+      let retValues = [];
+      while (subPackLength > 0) {
+        let dd = DecodePackage(aRawPackets.substring(offset), total);
+        subPackLength -= dd.l;
+        offset += dd.l;
 
-         if (exp.length > 0)
-           exp += ', ';
-          exp += dd.exp;
-       }
+        if (exp.length > 0)
+          exp += ', ';
+        exp += dd.exp;
 
-       let fullExp = GetOp(type);
-       fullExp += '(' + exp + ')';
+        retValues.push(dd.ret);
+      }
 
-       return { l: packageLength + 15 + totalSubPackLength, exp: fullExp};
-     }
-     else
-     {
-       let subPackCount = parseInt(aRawPackets.substring(7, 18), 2);
+      let fullExp = GetOp(type);
+      fullExp += '(' + exp + ')';
 
-       //console.log("sc " + subPackCount);
+      let nextRet = EvalOp(type, ...retValues);
 
-       let offset = packageLength + 11;
-       let subPackLength = 0;
-       let exp = '';
-       for (let i = 0; i < subPackCount; i++) {
-         let dd = DecodePackage(aRawPackets.substring(offset), total);
-         offset += dd.l;
-         subPackLength += dd.l;
+      return { l: packageLength + 15 + totalSubPackLength, exp: fullExp, ret: nextRet };
+    }
+    else {
+      let subPackCount = parseInt(aRawPackets.substring(7, 18), 2);
 
-         if (exp.length > 0)
-           exp += ', ';
-          exp += dd.exp;
-       }
+      //console.log("sc " + subPackCount);
 
-       let fullExp = GetOp(type);
-       fullExp += '(' + exp + ')';
-         
-       return { l: packageLength + 11 + subPackLength, exp: fullExp };
-     }
-   }
-   else
-   {
-     length = 0;
+      let offset = packageLength + 11;
+      let subPackLength = 0;
+      let exp = [];
+      let retValues = [];
+      for (let i = 0; i < subPackCount; i++) {
+        let dd = DecodePackage(aRawPackets.substring(offset), total);
+        offset += dd.l;
+        subPackLength += dd.l;
 
-     let payloadEncoded = aRawPackets.substring(6);
-     
-     let payload = '';
-     while (1) {
-       let control = payloadEncoded[0];
+        if (exp.length > 0)
+          exp += ', ';
+        exp += dd.exp;
 
-       payload += payloadEncoded.substring(1, 5);
+        retValues.push(dd.ret);
+      }
 
-       length += 5;
-       if (control == '0')
-         break;
-         
+      let fullExp = GetOp(type);
+      fullExp += '(' + exp + ')';
+
+      nextRet = EvalOp(type, ...retValues);
+
+      return { l: packageLength + 11 + subPackLength, exp: fullExp, ret: nextRet };
+    }
+  }
+  else {
+    length = 0;
+
+    let payloadEncoded = aRawPackets.substring(6);
+
+    let payload = '';
+    while (1) {
+      let control = payloadEncoded[0];
+
+      payload += payloadEncoded.substring(1, 5);
+
+      length += 5;
+      if (control == '0')
+        break;
+
       payloadEncoded = payloadEncoded.substring(5);
-     }
+    }
 
-     return { l: 3 + 3 + length, exp: parseInt(payload, 2) };
-   }
+    return { l: 3 + 3 + length, exp: parseInt(payload, 2), ret: parseInt(payload, 2) };
+  }
 }
 
-const kEncodingTable = { 
+const kEncodingTable = {
   0: '0000',
   1: '0001',
   2: '0010',
@@ -165,7 +187,8 @@ const kEncodingTable = {
   C: '1100',
   D: '1101',
   E: '1110',
-  F: '1111' };
+  F: '1111'
+};
 
 let rawPackets = util.MapInput('./Day16Input.txt', (aElem) => {
   let pp = kEncodingTable[aElem];
@@ -177,9 +200,10 @@ let rawPackets = util.MapInput('./Day16Input.txt', (aElem) => {
 
 let total = { verSum: 0 };
 
-let exp = DecodePackage(rawPackets, total).exp;
+let result = DecodePackage(rawPackets, total);
 
 console.log(total.verSum);
-//console.log(exp);
+//console.log(result.exp);
+console.log(result.ret);
 
-console.log(eval(exp));
+//console.log(eval(result.exp));
