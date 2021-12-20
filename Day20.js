@@ -9,7 +9,7 @@ function ExtendMap(aMap, aCount) {
     alg.Extend2DMatrix(aMap, cc);
 }
 
-var cc  = '.';
+var cc = '.';
 
 function ComputeNeighbours(aMap, aX, aY) {
 
@@ -28,13 +28,8 @@ function ComputeNeighbours(aMap, aX, aY) {
 }
 
 function ComputeNewPixel(aEncodingMap, aMap, aX, aY) {
-
- // if (aX >= s && aX < aMap[0].length - 2 * s && aY >= s && aY <= aMap.length - 2 * s)
- //{
   let index = parseInt(ComputeNeighbours(aMap, aX, aY).replace(/\#/g, '1').replace(/\./g, 0), 2);
   return aEncodingMap[index];
- //}
- //else return '.';
 }
 
 function ZoomImage(aEncodingMap, aMap) {
@@ -48,6 +43,28 @@ function ZoomImage(aEncodingMap, aMap) {
   return newMap;
 }
 
+function NthZoomImage(aEncodingMap, aMap, aCount) {
+  let map = aMap;
+
+  let count1 = 0;
+  for (let i = 0; i < aCount; i++) {
+
+    ExtendMap(map, 3);
+
+    map = ZoomImage(aEncodingMap, map);
+
+    cc = map[0][0];
+
+    if (i == 1)
+     count1 = algM.CreateMatrix(map).CountElement('#');
+
+    //console.log();
+    //algM.CreateMatrix(map).Print();
+  }
+
+  return { part1: count1, part2: algM.CreateMatrix(map).CountElement('#') };
+}
+
 let rawFloorMap = util.MapInput('./Day20Input.txt', (aElem, aIndex) => {
   return aElem;
 }, '\r\n\r\n', this);
@@ -55,27 +72,11 @@ let rawFloorMap = util.MapInput('./Day20Input.txt', (aElem, aIndex) => {
 let encodingTable = rawFloorMap[0].split('\r\n').join('').split('');
 let floorMap = rawFloorMap[1].split('\r\n').map(a => { return a.split(''); });
 
-//ExtendMap(floorMap, 3);
+//console.log(encodingTable.join(''));
 
-console.log(encodingTable.join(''));
+//algM.CreateMatrix(floorMap).Print();
 
-algM.CreateMatrix(floorMap).Print();
+let result = NthZoomImage(encodingTable, floorMap, 50);
 
-//let ff = parseInt(ComputeNeighbours(floorMap, 4, 4).replace(/\#/g, '1').replace(/\./g, 0), 2);
-
-//console.log("\n" + encodingTable[ff]);
-
-let map = floorMap;
-for (let i = 0; i < 50; i++) {
-
-  ExtendMap(map, 3);
-
-  map = ZoomImage(encodingTable, map);
-
-  cc = (cc == '.') ? '#' : '.'; 
-
-console.log();
-algM.CreateMatrix(map).Print();
-}
-
-console.log(algM.CreateMatrix(map).CountElement('#'));
+console.log(result.part1);
+console.log(result.part2);
