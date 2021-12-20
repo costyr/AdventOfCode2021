@@ -1,3 +1,4 @@
+const util = require('./Util.js');
 const matrix = require('./Matrix.js');
 
 function GenerateMatrix(aWidth, aHeight, aDefaultValue) {
@@ -46,7 +47,7 @@ function Extend2DMatrix(aMatrix, aDefaultValue) {
     aMatrix[y].push(aDefaultValue);
   }
 
-  aMatrix.push(newRow);
+  aMatrix.push(util.CopyObject(newRow));
 }
 
 function ExtractNthMatrixSize(aNth, aNthMatrix, aSize) {
