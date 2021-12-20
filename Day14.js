@@ -1,43 +1,5 @@
+const { count } = require('console');
 const util = require('./Util.js');
-
-function CreatePolimer(aTemplate, aInsts, aStepCount) {
-
-  for (let k = 0; k < aStepCount; k++) {
-  for (let i = 0; i < aTemplate.length - 1; i++)
-  {
-    let pp = aTemplate[i] + aTemplate[i + 1];
-    let nn = aInsts[pp];
-
-    if (nn !== undefined)
-    {
-      aTemplate.splice(i + 1, 0, nn);
-      i++;
-    }
-  }
-  console.log(aTemplate.join(''));
-}
-
-  let oo = [];
-  for (let i = 0; i < aTemplate.length; i++)
-    if (oo[aTemplate[i]] === undefined)
-      oo[aTemplate[i]] = 0;
-    else
-      oo[aTemplate[i]] += 1;
-
-  let min = Number.MAX_SAFE_INTEGER;
-  let max = 0;
-
-  for (let key in oo)
-  {
-    if (oo[key] > max)
-      max = oo[key];
-    
-    if (oo[key] < min)
-      min = oo[key];
-  }
-
-  return oo['B']  - ((oo['H'] === undefined) ? 0 : oo['H']);
-}
 
 function InvertRules(aInsts) {
 
@@ -52,29 +14,7 @@ function InvertRules(aInsts) {
   return gg;
 }
 
-function CreatePolimer2(aTemplate, aInsts, aInvInsts, aStepCount) {
-
-  for (let k = 0; k < aStepCount; k++) {
-  for (let i = 0; i < aTemplate.length - 1; i++)
-  {
-    let pp = aTemplate[i] + aTemplate[i + 1];
-    let nn = aInsts[pp];
-
-    if (nn !== undefined)
-    {
-      aTemplate.splice(i + 1, 0, nn);
-      i++;
-    }
-  }
-
-  let last = aTemplate[aTemplate.length - 2] + aTemplate[aTemplate.length - 1];
-
-  if (aInvInsts['B'].indexOf(last) == -1 && aInvInsts['H'].indexOf(last) == -1)
-    aTemplate.splice(aTemplate.length - 1, 1);
-
-  console.log(k + " " + aTemplate.join(''));
-}
-
+function CountOO(aTemplate) {
   let oo = [];
   for (let i = 0; i < aTemplate.length; i++)
     if (oo[aTemplate[i]] === undefined)
@@ -94,7 +34,59 @@ function CreatePolimer2(aTemplate, aInsts, aInvInsts, aStepCount) {
       min = oo[key];
   }
 
-  console.log(oo['B']  + " " + oo['H']);
+  /*for (let key in oo)
+  {
+    oo[key] = Math.round(oo[key] * 100 / aTemplate.length);
+  }*/
+
+  console.log(oo);
+
+  return max - min;
+}
+
+function CreatePolimer(aTemplate, aInsts, aStepCount) {
+  
+  let usedRules = [];
+
+  for (let k = 0; k < aStepCount; k++) {
+
+  let partOO = [];
+  let line = '';  
+  for (let i = 0; i < aTemplate.length - 1; i++)
+  {
+    let pp = aTemplate[i] + aTemplate[i + 1];
+
+    if (usedRules[pp] === undefined)
+      usedRules[pp] = 1;
+    else 
+      usedRules[pp] += 1;
+  
+    let nn = aInsts[pp];
+
+    if (partOO[nn] === undefined)
+      partOO[nn] = 1;
+    else
+    partOO[nn] += 1;
+
+    if (nn !== undefined)
+    {
+      aTemplate.splice(i + 1, 0, nn);
+      line += nn;
+      i++;
+    }
+
+    //let ff = CountOO(partOO);
+  }
+
+  //console.log(partOO);
+  //let ss = CountOO(aTemplate);
+
+  console.log(/*ss + " " + tt + " " + aTemplate.join('')*/ line);
+}
+
+  //console.log(usedRules);
+
+  return CountOO(aTemplate);
 }
 
 let insts = util.MapInput('./Day14TestInput.txt', (aElem, aIndex) => {
@@ -119,11 +111,14 @@ let invInsts = InvertRules(insts[1]);
 
 console.log(invInsts);
 
-//let ret = CreatePolimer(['C', 'B'], insts[1], 10);
+for (let key in insts[1]) {
+  console.log(key + "=>" + insts[1][key])
+let ret = CreatePolimer([key[0], [key[1]]], insts[1], 8);
 
-//console.log(ret);
+console.log(ret);
+}
 
-ret = CreatePolimer(['N', 'N'], insts[1], 10);
+/*ret = CreatePolimer(['N', 'N'], insts[1], 10);
 
 console.log(ret);
 
@@ -133,7 +128,7 @@ console.log(ret);
 
 ret = CreatePolimer(['C', 'B'], insts[1], 10);
 
-console.log(ret);
+console.log(ret);*/
 
 /*let paper = MarkPoints(insts[0], max);
 
