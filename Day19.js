@@ -1,4 +1,3 @@
-const { toASCII } = require('punycode');
 const util = require('./Util.js');
 
 const kOrientationTransform = [1, -1];
@@ -9,46 +8,11 @@ function Create3DOrientationTransform() {
   for (let i = 0; i < kOrientationTransform.length; i++)
     for (let j = 0; j < kOrientationTransform.length; j++)
       for (let k = 0; k < kOrientationTransform.length; k++)
-        orientationTransform3D.push([ kOrientationTransform[i], kOrientationTransform[j], kOrientationTransform[k]]);
+        orientationTransform3D.push([kOrientationTransform[i], kOrientationTransform[j], kOrientationTransform[k]]);
   return orientationTransform3D;
 }
 
-function FindMinMax(aScannerBeacons) {
-
-  let minMax = [];
-  for (let i = 0; i < aScannerBeacons.length; i++)
-  {
-    let min = [ Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER ];
-    let max = [ 0, 0, 0 ];
-
-    for (let j = 0; j < aScannerBeacons[i].length; j++)
-    {
-      
-        if (aScannerBeacons[i][j].x < min[0])
-          min[0] = aScannerBeacons[i][j].x;
-
-          if (aScannerBeacons[i][j].y < min[1])
-          min[1] = aScannerBeacons[i][j].y;
-
-          if (aScannerBeacons[i][j].z < min[2])
-          min[2] = aScannerBeacons[i][j].z;
-      
-     
-        if (aScannerBeacons[i][j].x > max[0])
-          max[0] = aScannerBeacons[i][j].x;
-
-        if (aScannerBeacons[i][j].y > max[1])
-          max[1] = aScannerBeacons[i][j].y;
-
-        if (aScannerBeacons[i][j].z > max[2])
-          max[2] = aScannerBeacons[i][j].z;
-    }
-    
-    minMax.push([ min[0], min[1], min[2], max[0], max[1], max[2] ]);
-  }
-
-  return minMax;
-}
+const tt = Create3DOrientationTransform();
 
 function GenerateAllBeaconPositions(aScannerBeacons, a3DOrientationTransform) {
 
@@ -56,107 +20,222 @@ function GenerateAllBeaconPositions(aScannerBeacons, a3DOrientationTransform) {
   for (let k = 0; k < a3DOrientationTransform.length; k++) {
 
     let hh = [];
-    for (let i = 0; i < aScannerBeacons.length; i++)  {
+    for (let i = 0; i < aScannerBeacons.length; i++) {
 
       let x = aScannerBeacons[i].x * a3DOrientationTransform[k][0];
       let y = aScannerBeacons[i].y * a3DOrientationTransform[k][1];
       let z = aScannerBeacons[i].z * a3DOrientationTransform[k][2];
 
-      hh.push({ x :x, y: y, z: z});
-      //hh.push({ x :y, y: z, z: x});
-      //hh.push({ x :z, y: x, z: y});
-   }
+      hh.push({ x: x, y: y, z: z });
+    }
+
+    let hh4 = [];
+    for (let i = 0; i < aScannerBeacons.length; i++) {
+
+      let x = aScannerBeacons[i].x * a3DOrientationTransform[k][0];
+      let y = aScannerBeacons[i].y * a3DOrientationTransform[k][1];
+      let z = aScannerBeacons[i].z * a3DOrientationTransform[k][2];
+
+      hh4.push({ x: x, y: z, z: y });
+    }
 
     let hh1 = []
-    for (let i = 0; i < aScannerBeacons.length; i++)  {
+    for (let i = 0; i < aScannerBeacons.length; i++) {
 
       let x = aScannerBeacons[i].x * a3DOrientationTransform[k][0];
       let y = aScannerBeacons[i].y * a3DOrientationTransform[k][1];
       let z = aScannerBeacons[i].z * a3DOrientationTransform[k][2];
 
-      //hh.push({ x :x, y: y, z: z});
-      hh1.push({ x :y, y: z, z: x});
-      //hh.push({ x :z, y: x, z: y});
-   }
+      hh1.push({ x: y, y: z, z: x });
+    }
 
-   let hh2 = [];
-    for (let i = 0; i < aScannerBeacons.length; i++)  {
+    let hh5 = []
+    for (let i = 0; i < aScannerBeacons.length; i++) {
 
       let x = aScannerBeacons[i].x * a3DOrientationTransform[k][0];
       let y = aScannerBeacons[i].y * a3DOrientationTransform[k][1];
       let z = aScannerBeacons[i].z * a3DOrientationTransform[k][2];
 
-      //hh.push({ x :x, y: y, z: z});
-      //hh.push({ x :y, y: z, z: x});
-      hh2.push({ x :z, y: x, z: y});
-   }
+      hh5.push({ x: y, y: x, z: z });
+    }
 
-   all.push(hh);
-   all.push(hh1);
-   all.push(hh2);
+    let hh2 = [];
+    for (let i = 0; i < aScannerBeacons.length; i++) {
+
+      let x = aScannerBeacons[i].x * a3DOrientationTransform[k][0];
+      let y = aScannerBeacons[i].y * a3DOrientationTransform[k][1];
+      let z = aScannerBeacons[i].z * a3DOrientationTransform[k][2];
+
+      hh2.push({ x: z, y: x, z: y });
+    }
+
+    let hh6 = [];
+    for (let i = 0; i < aScannerBeacons.length; i++) {
+
+      let x = aScannerBeacons[i].x * a3DOrientationTransform[k][0];
+      let y = aScannerBeacons[i].y * a3DOrientationTransform[k][1];
+      let z = aScannerBeacons[i].z * a3DOrientationTransform[k][2];
+
+      hh6.push({ x: z, y: y, z: x });
+    }
+
+    all.push(hh);
+    all.push(hh1);
+    all.push(hh2);
+    all.push(hh4);
+    all.push(hh5);
+    all.push(hh6);
   }
 
- console.log (all.length);
   return all;
 }
 
-function Analize(aScanners, a3DOrientationTransform, aMinMax) {
-  let bMap = []
-  let hh = [];
-  for (let i = 0; i < aScanners.length; i++)
-    hh.push(GenerateAllBeaconPositions(aScanners[i], a3DOrientationTransform, aMinMax[i], bMap));
+function VerifyRelativeScannerPosition(aZeroBasedBeacons, aScannerBeacons, aX, aY, aZ) {
+  let sameBeacons = [];
+  for (let i = 0; i < aZeroBasedBeacons.length; i++)
+    for (let j = 0; j < aScannerBeacons.length; j++)
+      if ((aScannerBeacons[j].x + aX == aZeroBasedBeacons[i].x) &&
+        (aScannerBeacons[j].y + aY == aZeroBasedBeacons[i].y) &&
+        (aScannerBeacons[j].z + aZ == aZeroBasedBeacons[i].z))
+        sameBeacons.push(aScannerBeacons[j]);
 
-  for (let i = 0; i < a3DOrientationTransform.length; i++)
-    for (let j = 0; j < a3DOrientationTransform.length; j++)
-    for (let i1 = 0; i1 < a3DOrientationTransform.length; i1++)
-    for (let j2 = 0; j2 < a3DOrientationTransform.length; j2++)
-    for (let j3 = 0; j3 < a3DOrientationTransform.length; j3++)
+  return sameBeacons;
+}
+
+function ComputeDiffBeacons(aScannerBeacons, aExclude) {
+  let diffBeacons = [];
+
+  for (let i = 0; i < aScannerBeacons.length; i++)
   {
-    let oo = [];
-    for (let u = 0; u < hh[0][i].length; u++)
-      oo.push[hh[0][i][u].x + "_" + hh[0][i][u].y + "_" + hh[0][i][u].z] = 0;
-    for (let k = 0; k < hh[1][j].length; k++)
-      oo[hh[1][j][k].x + "_" + hh[1][j][k].y + "_" + hh[1][j][k].z] = 0;
+    let bb = aScannerBeacons[i];
+    let index = aExclude.findIndex(aElem => { return aElem.x == bb.x && aElem.y == bb.y && aElem.z == bb.z; });
 
-      for (let u1 = 0; u1 < hh[0][i].length; u1++)
-      oo.push[hh[2][i1][u1].x + "_" + hh[2][i1][u1].y + "_" + hh[2][i1][u1].z] = 0;
-    
-      for (let k1 = 0; k1 < hh[1][j].length; k1++)
-      oo[hh[3][j2][k1].x + "_" + hh[3][j2][k1].y + "_" + hh[3][j2][k1].z] = 0;
-
-      for (let k3 = 0; k3 < hh[1][j].length; k3++)
-      oo[hh[4][j3][k3].x + "_" + hh[4][j3][k3].y + "_" + hh[4][j3][k3].z] = 0;
-
-    //console.log(oo);
-          
+    if (index == -1)
+      diffBeacons.push(bb);
   }
-      
-  //console.log(JSON.stringify(hh, null, 2));
-  return bMap;
+
+  return diffBeacons;
+}
+
+function FindRelativeScannerPosition(aZeroBasedBeacons, aScannerBeacons) {
+
+  let max = 0;
+  for (let i = 0; i < aZeroBasedBeacons.length; i++)
+    for (let j = 0; j < aScannerBeacons.length; j++) {
+      let x = aZeroBasedBeacons[i].x - aScannerBeacons[j].x;
+      let y = aZeroBasedBeacons[i].y - aScannerBeacons[j].y;
+      let z = aZeroBasedBeacons[i].z - aScannerBeacons[j].z;
+
+      let sameBeacons = VerifyRelativeScannerPosition(aZeroBasedBeacons, aScannerBeacons, x, y, z);
+
+      if (sameBeacons.length >= 12) {
+
+        let diffBeacons = ComputeDiffBeacons(aScannerBeacons, sameBeacons);
+        return { coord: { x: x, y: y, z: z }, diffBeacons: diffBeacons, count: sameBeacons.length };
+      }
+    }
+
+  return { coord: { x: Number.MAX_SAFE_INTEGER, y: 0, z: 0 }, diffBeacons: [], count: 0 };
+}
+
+function SearchRelativeScannerPositionInMultivers(aAllScanners, aZeroBasedBeaconsIndex, aScannerBeaconsIndex) {
+
+  for (let i = 0; i < aAllScanners[aZeroBasedBeaconsIndex].length; i++)
+    for (let j = 0; j < aAllScanners[aScannerBeaconsIndex].length; j++) {
+      let result = FindRelativeScannerPosition(aAllScanners[aZeroBasedBeaconsIndex][i], aAllScanners[aScannerBeaconsIndex][j]);
+
+      if (result.coord.x < Number.MAX_SAFE_INTEGER) {
+        for (let k = 0; k < result.diffBeacons.length; k++) {
+
+          let x = result.coord.x + result.diffBeacons[k].x;
+          let y = result.coord.y + result.diffBeacons[k].y;
+          let z = result.coord.z + result.diffBeacons[k].z;
+
+          aAllScanners[aZeroBasedBeaconsIndex][i].push({ x: x, y: y, z: z });
+        }
+        return { z: i, b: j, pos: result.coord, count: result.count };
+      }
+    }
+
+  return { z: -1 };
+}
+
+function ReduceBeacons(aScanners, aAllScanners) {
+  let merged = [];  
+
+while (1) {  
+
+let found = false;
+for (let i = 0; i < aScanners.length; i++) 
+  for (let j = i + 1; j < aScanners.length; j++) {
+   if (merged[j] === undefined) {
+  let ret = SearchRelativeScannerPositionInMultivers(aAllScanners, i, j);
+  if (ret.z != -1) {
+    console.log("Scanner " + j + " position relative to " + i + ": ");
+    console.log(ret);
+    found = true;
+
+    merged[j] = 0;
+  }
+  }
+}
+  if (!found)
+    break;
 }
 
 let total = 0;
-
-let scanners = util.MapInput('./Day19TestInput2.txt', (aElem) => {
-
-  let beacons = aElem.split('\r\n').splice(1).map((aRawCoord) => { 
-    let coords = aRawCoord.split(','); 
-    return {x: parseInt(coords[0]), y: parseInt(coords[1]), z: parseInt(coords[2])};
-  } );
+for (let i = 0; i < aScanners.length; i++)
+{
+  if (merged[i] !== undefined)
+    continue;
   
-  total += beacons.length;
+  console.log(i + " " + aAllScanners[i][0].length);
+
+  total += aAllScanners[i][0].length;
+}
+
+return total;
+}
+
+let scanners = util.MapInput('./Day19Input.txt', (aElem) => {
+
+  let beacons = aElem.split('\r\n').splice(1).map((aRawCoord) => {
+    let coords = aRawCoord.split(',');
+    return { x: parseInt(coords[0]), y: parseInt(coords[1]), z: parseInt(coords[2]) };
+  });
 
   return beacons;
 }, '\r\n\r\n', this);
 
-console.log(scanners);
+let allScanners = [];
+for (let i = 0; i < scanners.length; i++)
+  allScanners.push(GenerateAllBeaconPositions(scanners[i], tt));
 
-console.log(total);
+console.log(ReduceBeacons(scanners, allScanners));
 
-let tt = Create3DOrientationTransform();
+let lastScanners = [allScanners[0][0], allScanners[2][0], allScanners[12][0]];
 
-let mm =GenerateAllBeaconPositions(scanners[0], tt);
+let allScanners2 = [];
+for (let i = 0; i < lastScanners.length; i++)
+  allScanners2.push(GenerateAllBeaconPositions(lastScanners[i], tt));
 
-console.log(mm);
+console.log(ReduceBeacons(lastScanners, allScanners2));
 
-//console.log(Analize(scanners, tt, mm));
+//console.log(allScanners[0][0].sort((a, b) => { return a.x - b.x; }));
+
+//console.log(allScanners[0][0].length);
+/*
+let s2 = { x: 1105, y:-1205, z: 1229 };
+let yy = [];
+for (let i = 0; i < scanners[2].length; i++)
+{
+  let x = s2.x - scanners[2][i].x;
+  let y = s2.y + scanners[2][i].z;
+  let z = s2.z + scanners[2][i].y;
+
+  //console.log(x + " " + y + " " + z);
+
+  yy.push({x: x, y: y, z: z});
+}
+
+console.log(yy.sort((a, b) => { return a.x - b.x; }));*/
