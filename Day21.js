@@ -81,6 +81,7 @@ class DiracDiceQuantumGame {
      this.mMultivers.push(ver2);
      this.mMultivers.push(ver3);
 
+     this.mDice.value = 1;
      return 1;
    }
    else {
@@ -98,10 +99,10 @@ class DiracDiceQuantumGame {
 
    this.mPlayer1.score += this.mPlayer1.position;
 
-   console.log("Player 1 " + this.mPlayer1.position + " " + this.mPlayer1.score);
-
-   if (this.mPlayer1.score >= 21)
+   if (this.mPlayer1.score >= 21) {
+    console.log("Player 1 " + this.mPlayer1.position + " " + this.mPlayer1.score + " " + this.mDice.value);
      return { ended : true, winner: 0 };
+   }
 
    let player2RoolCount = this.RollDice() +  this.RollDice() + this.RollDice();
 
@@ -109,10 +110,10 @@ class DiracDiceQuantumGame {
 
    this.mPlayer2.score += this.mPlayer2.position;
 
-   console.log("Player 2 " + this.mPlayer2.position + " " + this.mPlayer2.score);
-
-   if (this.mPlayer2.score >= 21)
+   if (this.mPlayer2.score >= 21) {
+    console.log("Player 2 " + this.mPlayer2.position + " " + this.mPlayer2.score + " " + this.mDice.value);
      return { ended : true, winner: 1 };
+   }
 
    return  {ended: false, winner: -1 };
  }
@@ -127,7 +128,7 @@ multivers.push(firstGame);
 
 let winnerCount = [0, 0];
 while(multivers.length > 0) {
-   let next = multivers[multivers.length - 1];  
+   let next = multivers[0];  
    let result = next.Play();
    if (result.ended) {
      winnerCount[result.winner] ++;
