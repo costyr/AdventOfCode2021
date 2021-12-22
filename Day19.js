@@ -14,6 +14,23 @@ function Create3DOrientationTransform() {
 
 const tt = Create3DOrientationTransform();
 
+function ExistsTransform(aAll, aTransform) {
+  for (let i = 0; i < aAll.length; i++) {
+    let found = true;
+    for (let j = 0; j < aTransform.length; j++)
+      if (aTransform[j].x != aAll[i][j].x ||
+        aTransform[j].y != aAll[i][j].y ||
+        aTransform[j].z != aAll[i][j].z) {
+        found = false;
+        break;
+      }
+    if (found)
+      return true;
+  }
+
+  return false;
+}
+
 function GenerateAllBeaconPositions(aScannerBeacons, a3DOrientationTransform) {
 
   let all = [];
@@ -79,12 +96,23 @@ function GenerateAllBeaconPositions(aScannerBeacons, a3DOrientationTransform) {
       hh6.push({ x: z, y: y, z: x });
     }
 
-    all.push(hh);
-    all.push(hh1);
-    all.push(hh2);
-    all.push(hh4);
-    all.push(hh5);
-    all.push(hh6);
+    if (!ExistsTransform(all, hh))
+      all.push(hh);
+
+    if (!ExistsTransform(all, hh1))
+      all.push(hh1);
+
+    if (!ExistsTransform(all, hh2))
+      all.push(hh2);
+
+    if (!ExistsTransform(all, hh4))
+      all.push(hh4);
+
+    if (!ExistsTransform(all, hh5))
+      all.push(hh5);
+
+    if (!ExistsTransform(all, hh6))
+      all.push(hh6);
   }
 
   return all;
@@ -105,8 +133,7 @@ function VerifyRelativeScannerPosition(aZeroBasedBeacons, aScannerBeacons, aX, a
 function ComputeDiffBeacons(aScannerBeacons, aExclude) {
   let diffBeacons = [];
 
-  for (let i = 0; i < aScannerBeacons.length; i++)
-  {
+  for (let i = 0; i < aScannerBeacons.length; i++) {
     let bb = aScannerBeacons[i];
     let index = aExclude.findIndex(aElem => { return aElem.x == bb.x && aElem.y == bb.y && aElem.z == bb.z; });
 
@@ -138,63 +165,68 @@ function FindRelativeScannerPosition(aZeroBasedBeacons, aScannerBeacons) {
   return { coord: { x: Number.MAX_SAFE_INTEGER, y: 0, z: 0 }, diffBeacons: [], count: 0 };
 }
 
-function SearchRelativeScannerPositionInMultivers(aAllScanners, aZeroBasedBeaconsIndex, aScannerBeaconsIndex) {
+function SearchRelativeScannerPositionInMultivers(aAllScanners, aZeroBasedBeacons, aScannerBeaconsIndex) {
 
-  for (let i = 0; i < aAllScanners[aZeroBasedBeaconsIndex].length; i++)
-    for (let j = 0; j < aAllScanners[aScannerBeaconsIndex].length; j++) {
-      let result = FindRelativeScannerPosition(aAllScanners[aZeroBasedBeaconsIndex][i], aAllScanners[aScannerBeaconsIndex][j]);
+  for (let j = 0; j < aAllScanners[aScannerBeaconsIndex].length; j++) {
+    let result = FindRelativeScannerPosition(aZeroBasedBeacons, aAllScanners[aScannerBeaconsIndex][j]);
 
-      if (result.coord.x < Number.MAX_SAFE_INTEGER) {
-        for (let k = 0; k < result.diffBeacons.length; k++) {
+    if (result.coord.x < Number.MAX_SAFE_INTEGER) {
+      for (let k = 0; k < result.diffBeacons.length; k++) {
 
-          let x = result.coord.x + result.diffBeacons[k].x;
-          let y = result.coord.y + result.diffBeacons[k].y;
-          let z = result.coord.z + result.diffBeacons[k].z;
+        let x = result.coord.x + result.diffBeacons[k].x;
+        let y = result.coord.y + result.diffBeacons[k].y;
+        let z = result.coord.z + result.diffBeacons[k].z;
 
-          aAllScanners[aZeroBasedBeaconsIndex][i].push({ x: x, y: y, z: z });
-        }
-        return { z: i, b: j, pos: result.coord, count: result.count };
+        aZeroBasedBeacons.push({ x: x, y: y, z: z });
       }
+      return { z: 0, b: j, pos: result.coord, count: result.count };
     }
+  }
 
   return { z: -1 };
 }
 
 function ReduceBeacons(aScanners, aAllScanners) {
-  let merged = [];  
+  let merged = [];
 
-while (1) {  
+  let zeroBasedBeacons = [...aScanners[0]];
 
-let found = false;
-for (let i = 0; i < aScanners.length; i++) 
-  for (let j = i + 1; j < aScanners.length; j++) {
-   if (merged[j] === undefined) {
-  let ret = SearchRelativeScannerPositionInMultivers(aAllScanners, i, j);
-  if (ret.z != -1) {
-    console.log("Scanner " + j + " position relative to " + i + ": ");
-    console.log(ret);
-    found = true;
+  let scanners = [{ x: 0, y: 0, z: 0 }];
+  while (1) {
 
-    merged[j] = 0;
+    let found = false;
+
+    for (let j = 1; j < aScanners.length; j++) {
+      if (merged[j] === undefined) {
+        let ret = SearchRelativeScannerPositionInMultivers(aAllScanners, zeroBasedBeacons, j);
+        if (ret.z != -1) {
+          console.log("Scanner " + j + " position relative to 0: ");
+
+          scanners[j] = ret.pos;
+
+          console.log(ret.pos);
+          found = true;
+
+          merged[j] = 0;
+        }
+      }
+    }
+    if (!found)
+      break;
   }
-  }
-}
-  if (!found)
-    break;
-}
 
-let total = 0;
-for (let i = 0; i < aScanners.length; i++)
-{
-  if (merged[i] !== undefined)
-    continue;
-  
-  console.log(i + " " + aAllScanners[i][0].length);
+  let maxDist = 0;
+  for (let i = 0; i < scanners.length; i++)
+    for (let j = i + 1; j < scanners.length; j++) {
+      dist = Math.abs(scanners[i].x - scanners[j].x) +
+        Math.abs(scanners[i].y - scanners[j].y) +
+        Math.abs(scanners[i].z - scanners[j].z);
 
-  total += aAllScanners[i][0].length;
-}
+      if (dist > maxDist)
+        maxDist = dist;
+    }
 
-return total;
+  return { part1: zeroBasedBeacons.length, part2: maxDist };
 }
 
 let scanners = util.MapInput('./Day19Input.txt', (aElem) => {
@@ -211,31 +243,7 @@ let allScanners = [];
 for (let i = 0; i < scanners.length; i++)
   allScanners.push(GenerateAllBeaconPositions(scanners[i], tt));
 
-console.log(ReduceBeacons(scanners, allScanners));
+let result = ReduceBeacons(scanners, allScanners);
 
-let lastScanners = [allScanners[0][0], allScanners[2][0], allScanners[12][0]];
-
-let allScanners2 = [];
-for (let i = 0; i < lastScanners.length; i++)
-  allScanners2.push(GenerateAllBeaconPositions(lastScanners[i], tt));
-
-console.log(ReduceBeacons(lastScanners, allScanners2));
-
-//console.log(allScanners[0][0].sort((a, b) => { return a.x - b.x; }));
-
-//console.log(allScanners[0][0].length);
-/*
-let s2 = { x: 1105, y:-1205, z: 1229 };
-let yy = [];
-for (let i = 0; i < scanners[2].length; i++)
-{
-  let x = s2.x - scanners[2][i].x;
-  let y = s2.y + scanners[2][i].z;
-  let z = s2.z + scanners[2][i].y;
-
-  //console.log(x + " " + y + " " + z);
-
-  yy.push({x: x, y: y, z: z});
-}
-
-console.log(yy.sort((a, b) => { return a.x - b.x; }));*/
+console.log(result.part1);
+console.log(result.part2);
