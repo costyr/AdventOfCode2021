@@ -23,7 +23,52 @@ function CountCubes(aCubes) {
   return total;
 }
 
-let cubes = util.MapInput('./Day22Input.txt', (aElem) => {
+function CountAllCubes(aCubes) {
+  let noOverlappingCubes = [aCubes[0]];
+ 
+  for (let i = 1; i < aCubes.length; i++) {
+
+    let newCubes = [];
+    for (let j = 0; j < noOverlappingCubes.length; j++)
+      IntersectCubes(aCubes[i], noOverlappingCubes[j], newCubes);
+
+    noOverlappingCubes = newCubes;
+  }
+
+  let total = 0;
+  for (let i = 0; i < noOverlappingCubes.length; i++)
+    if (noOverlappingCubes[i].state)
+    {
+      let sizeX = Math.abs(noOverlappingCubes[i].x2 - noOverlappingCubes[i].x1);
+      let sizeY = Math.abs(noOverlappingCubes[i].y2 - noOverlappingCubes[i].y1);
+      let sizeZ = Math.abs(noOverlappingCubes[i].z2 - noOverlappingCubes[i].z1)
+
+      total += sizeX * sizeY * sizeZ;
+    }
+
+  return total;
+}
+
+function IntersectCubes(aCube1, aCube2, aNoOverlappingCubes) {
+  let minX = Math.min(aCube1.x1, aCube2.x2); 
+  let maxX = Math.max(aCube1.x1, aCube1.x2); 
+  
+  let minY = Math.min(aCube1.y1, aCube2.y2); 
+  let maxY = Math.max(aCube1.y1, aCube1.y2); 
+
+  let minZ = Math.min(aCube1.z1, aCube2.z2); 
+  let maxZ = Math.max(aCube1.z1, aCube1.z2);
+
+  let xOverlap = Math.max(0, Math.min(aCube1.x2, aCube2.x2) - Math.max(aCube1.x1, aCube2.x1));
+  let yOverlap = Math.max(0, Math.min(aCube1.y2, aCube2.y2) - Math.max(aCube1.y1, aCube2.y1));
+  let zOverlap = Math.max(0, Math.min(aCube1.z2, aCube2.z2) - Math.max(aCube1.z1, aCube2.z1));
+
+  let overlapArea = xOverlap * yOverlap * zOverlap;
+
+  return (overlapArea > 0);
+}
+
+let cubes = util.MapInput('./Day22TestInput.txt', (aElem) => {
 
     let bb = aElem.split(' ');
 
@@ -38,3 +83,5 @@ let cubes = util.MapInput('./Day22Input.txt', (aElem) => {
 console.log(cubes);
 
 console.log(CountCubes(cubes));
+
+IntersectCubes(cubes[0], cubes[1]);
