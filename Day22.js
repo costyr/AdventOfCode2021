@@ -1,55 +1,99 @@
+const { toASCII } = require('punycode');
 const util = require('./Util.js');
 
-function CountCubes(aCubes) {
+function ComputeTotal(aCubesMap) {
+  let total = 0;  
+  for (let key in aCubesMap)
+    if (aCubesMap[key] > 0)
+      total ++;
+  return total;
+}
+
+function CountCubes(aCubes, aSize) {
   let cubesMap = [];
   aCubes.map((a, aIndex) => {
 
-      console.log(aIndex + " " + JSON.stringify(a));
-
-      for (let i = Math.max(-50, a.x1); i <= Math.min(a.x2, 50); i++)  
-        for (let j = Math.max(-50, a.y1); j <= Math.min(a.y2, 50); j++)  
-         for (let k = Math.max(-50, a.z1); k <= Math.min(a.z2, 50); k++) {
+      let intersect = 0;
+      for (let i = Math.max(-aSize, a.x1); i <= Math.min(a.x2, aSize); i++)  
+        for (let j = Math.max(-aSize, a.y1); j <= Math.min(a.y2, aSize); j++)  
+         for (let k = Math.max(-aSize, a.z1); k <= Math.min(a.z2, aSize); k++) {
           let ptId = i + "_" + j + "_"+ k; 
           
+          if (cubesMap[ptId] != undefined)
+            intersect ++;
+
           cubesMap[ptId] = a.state ? 1 : 0;  
          }
+
+         let total = ComputeTotal(cubesMap); 
+         console.log(total + " " +  aIndex + ": " + intersect);
+
     }, this);
 
-  let total = 0;  
-  for (let key in cubesMap)
-    if (cubesMap[key] > 0)
-      total ++;
+  return ComputeTotal(cubesMap);;
+}
 
-  return total;
+function ComputeCubeArea(aCube) {
+  return ((aCube.x2 - aCube.x1) + 1) * ((aCube.y2 - aCube.y1) + 1) * ((aCube.z2 - aCube.z1) + 1);    
 }
 
 function CountAllCubes(aCubes) {
+
+  console.log("0 0: 0");
+  let total = aCubes[0].state ? ComputeCubeArea(aCubes[0]) : 0; 
   let noOverlappingCubes = [aCubes[0]];
- 
+
   for (let i = 1; i < aCubes.length; i++) {
 
-    let newCubes = [];
-    for (let j = 0; j < noOverlappingCubes.length; j++)
-      IntersectCubes(aCubes[i], noOverlappingCubes[j], newCubes);
+    let state1 = aCubes[i].state;
 
-    noOverlappingCubes = newCubes;
-  }
+    let hh = 0;
+    for (let j = 0; j < noOverlappingCubes.length; j++) {
 
-  let total = 0;
-  for (let i = 0; i < noOverlappingCubes.length; i++)
-    if (noOverlappingCubes[i].state)
-    {
-      let sizeX = Math.abs(noOverlappingCubes[i].x2 - noOverlappingCubes[i].x1);
-      let sizeY = Math.abs(noOverlappingCubes[i].y2 - noOverlappingCubes[i].y1);
-      let sizeZ = Math.abs(noOverlappingCubes[i].z2 - noOverlappingCubes[i].z1)
+      let state2 = noOverlappingCubes[j].state;
 
-      total += sizeX * sizeY * sizeZ;
+      let intersectArea = IntersectCubesSlow(aCubes[i], noOverlappingCubes[j]);
+      hh += intersectArea;
+
+      if (intersectArea > 0)
+      {
+        if (state1)
+        {
+          if (state2) {
+            total -= intersectArea;
+
+            if (total < 0)
+              total = 0;
+          }
+        }
+        else
+        {
+          if (state2) {
+            total -= intersectArea;
+
+            if (total < 0)
+              total = 0;
+          }
+        }            
+      }
     }
+
+    if (state1) {
+      
+      let gg = ComputeCubeArea(aCubes[i]);
+      
+      total += gg;
+    }
+
+    console.log(total + " " + i + ": " + hh);
+
+    noOverlappingCubes.push(aCubes[i]);
+  }
 
   return total;
 }
 
-function IntersectCubes(aCube1, aCube2, aNoOverlappingCubes) {
+function IntersectCubes(aCube1, aCube2) {
   let minX = Math.min(aCube1.x1, aCube2.x2); 
   let maxX = Math.max(aCube1.x1, aCube1.x2); 
   
@@ -65,10 +109,38 @@ function IntersectCubes(aCube1, aCube2, aNoOverlappingCubes) {
 
   let overlapArea = xOverlap * yOverlap * zOverlap;
 
-  return (overlapArea > 0);
+  if (overlapArea)
+    return (xOverlap + 1) * (yOverlap + 1) * (zOverlap + 1);
+
+  return 0;
 }
 
-let cubes = util.MapInput('./Day22TestInput.txt', (aElem) => {
+function CubeToMap(aCube, aMap) {
+  for (let i = aCube.x1; i <= aCube.x2; i++)  
+  for (let j = aCube.y1; j <= aCube.y2; j++)  
+   for (let k = aCube.z1; k <= aCube.z2; k++) {
+    let ptId = i + "_" + j + "_"+ k; 
+    
+     if (aMap[ptId] === undefined)
+       aMap[ptId] = 0;
+     else
+       aMap[ptId] += 1;
+   }
+}
+
+function IntersectCubesSlow(aCube1, aCube2) {
+
+  let cubesMap = []
+  CubeToMap(aCube1, cubesMap);
+  CubeToMap(aCube2, cubesMap);
+
+  let total = 0;
+  for (let key in cubesMap)
+    total += cubesMap[key];
+  return total;
+}
+
+let cubes = util.MapInput('./Day22TestInput4.txt', (aElem) => {
 
     let bb = aElem.split(' ');
 
@@ -80,8 +152,24 @@ let cubes = util.MapInput('./Day22TestInput.txt', (aElem) => {
     return { state: (bb[0] == 'on'), x1: cc[0][0], x2: cc[0][1], y1: cc[1][0], y2: cc[1][1], z1: cc[2][0], z2: cc[2][1] };
     }, '\r\n', this);
 
-console.log(cubes);
+for (let i = 0; i < cubes.length; i++)
+  console.log(i + " " + JSON.stringify(cubes[i]) + " " + ComputeCubeArea(cubes[i]));
 
-console.log(CountCubes(cubes));
+//IntersectCubes(cubes[14], cubes[49]);
+/*
+for (let i = 0; i < cubes.length; i++)
+  for (let j = i + 1; j < cubes.length; j++)
+  {
+    let ff = IntersectCubes(cubes[i], cubes[j]);
+    let ff2 = IntersectCubesSlow(cubes[i], cubes[j]);
 
-IntersectCubes(cubes[0], cubes[1]);
+    if (ff != ff2) {
+      console.log(i + " " + j + ": " + ff + " = " + ff2);
+    }
+  }*/
+
+console.log(CountCubes(cubes, 50));
+
+//IntersectCubes(cubes[0], cubes[1]);
+
+console.log(CountAllCubes(cubes));
