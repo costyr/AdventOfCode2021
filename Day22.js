@@ -1,4 +1,3 @@
-const { toASCII } = require('punycode');
 const util = require('./Util.js');
 
 function ComputeTotal(aCubesMap) {
