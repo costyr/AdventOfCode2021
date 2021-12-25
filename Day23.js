@@ -4,22 +4,6 @@ const alg2 = require('./Lee.js');
 const alg3 = require('./Matrix.js');
 
 const kAmphipods = ['A', 'B', 'C', 'D'];
-const kAmphipodsFinalPositions = [[{ x: 3, y: 2 }, 
-                                   { x: 3, y: 3 }, 
-                                   { x: 3, y: 4 }, 
-                                  { x: 3, y: 5 }],
-                                  [{ x: 5, y: 2 }, 
-                                   { x: 5, y: 3 }, 
-                                   { x: 5, y: 4 }, 
-                                  { x: 5, y: 5 }],
-                                  [{ x: 7, y: 2 }, 
-                                   { x: 7, y: 3 }, 
-                                   { x: 7, y: 4 }, 
-                                  { x: 7, y: 5 }],
-                                  [{ x: 9, y: 2 }, 
-                                   { x: 9, y: 3 }, 
-                                   { x: 9, y: 4 }, 
-                                  { x: 9, y: 5 }]];
 
 function IsValidDirection(aValue) {
   return true;
@@ -39,34 +23,35 @@ function GetAmphipodsPositions(aMap) {
   return gg;
 }
 
-function IsEndPosition(aPos, aEndPositions) {
-  return aEndPositions.findIndex(a => { return (a.x == aPos.x) && (a.y == aPos.y) }) != -1;
+function IsEndPosition(aMap, aPos, aSimbol) {
+  let x = (aSimbol == 'A') ? 3 : (aSimbol == 'B') ? 5 : (aSimbol == 'C') ? 7 : 9;
+
+  if ((aPos.x == x) && (aPos.y > 1) && (aPos.y < aMap.length - 1))
+    return true;
+
+  return false;
 }
 
-function IsOnAnyEndPosition(aPos) {
-  for (let i = 0; i < kAmphipodsFinalPositions.length; i++)
-    if (IsEndPosition(aPos, kAmphipodsFinalPositions[i]))
+function IsOnAnyEndPosition(aMap, aPos) {
+  for (let i = 0; i < kAmphipods.length; i++)
+    if (IsEndPosition(aMap, aPos, kAmphipods[i]))
       return true;
   return false;
 }
 
-function IsNoPosition(aPos, aEndPositions, aSimbol) {
+function IsNoPosition(aMap, aPos, aSimbol) {
 
   if (((aPos.x == 3) && (aPos.y == 1)) ||
-      ((aPos.x == 5) && (aPos.y == 1)) ||
-      ((aPos.x == 7) && (aPos.y == 1)) ||
-      ((aPos.x == 9) && (aPos.y == 1))) 
+    ((aPos.x == 5) && (aPos.y == 1)) ||
+    ((aPos.x == 7) && (aPos.y == 1)) ||
+    ((aPos.x == 9) && (aPos.y == 1)))
     return true;
 
-  if (IsOnAnyEndPosition(aPos) && !IsEndPosition(aPos, aEndPositions))
+  if (IsOnAnyEndPosition(aMap, aPos, aSimbol) && !IsEndPosition(aMap, aPos, aSimbol))
     return true;
 
-  if (IsEndPosition(aPos, aEndPositions))
-  {
-    let bottom = map[aPos.y + 1][aPos.x];
-              
-    if ((bottom != '#') && (bottom != aSimbol))
-      return true;
+  if (IsEndPosition(aMap, aPos, aSimbol) && !IsValidBottom(aMap, aPos, aSimbol)) {
+    return true;
   }
 
   return false;
@@ -83,17 +68,28 @@ function CreateNode(aMap, aSimbol, aAmphipodIndex, aPos, aCostPos, aCost) {
 function GenerateEndNode(aMap) {
 
   let map = util.CopyObject(aMap);
-  for (let i = 0; i < kAmphipodsFinalPositions.length; i++) {
-    let simbol = kAmphipods[i];
-
-    for (let j = 0; j < kAmphipodsFinalPositions[i].length; j++) {
-      let pos = kAmphipodsFinalPositions[i][j];
-
-      map[pos.y][pos.x] = simbol;
+  let endPositions = [];
+  for (let i = 0; i < map.length; i++)
+    for (let j = 0; j < map.length; j++) {
+      for (let k = 0; k < kAmphipods.length; k++)
+        if (IsEndPosition(map, { x: j, y: i }, kAmphipods[k])) {
+          map[i][j] = kAmphipods[k];
+          endPositions.push({ x: j, y: i });
+        }
     }
+
+  return { endNode: JSON.stringify(map), endPositions: endPositions };
+}
+
+function IsValidBottom(aMap, aPos, aSimbol) {
+  for (let i = aPos.y + 1; i < aMap.length; i++) {
+    let bottom = map[i][aPos.x];
+
+    if (bottom != '#' && bottom != aSimbol)
+      return false;
   }
 
-  return JSON.stringify(map);
+  return true;
 }
 
 class SpecialGraph {
@@ -124,11 +120,10 @@ class SpecialGraph {
       let pos = amphipodsPositons[i];
       let simbol = map[pos.y][pos.x];
       let amphipodIndex = kAmphipods.indexOf(simbol);
-      let endPositions = kAmphipodsFinalPositions[amphipodIndex];
 
       leeAlg.ComputeLee(pos);
 
-      if (IsOnAnyEndPosition(pos)) {
+      if (IsOnAnyEndPosition(map, pos, simbol)) {
         for (let k = 0; k < map.length; k++)
           for (let j = 0; j < map[k].length; j++) {
             let costPos = { x: j, y: k };
@@ -137,42 +132,37 @@ class SpecialGraph {
             if (cost < 0)
               continue;
 
-            if(IsEndPosition(pos, endPositions))  {
-              let bottom = map[pos.y + 1][pos.x];
-              
-              if ((bottom == '#') || (bottom == simbol))
-                continue;
+            if (IsEndPosition(map, pos, simbol) && IsValidBottom(map, pos, simbol)) {
+              continue;
             }
 
-            if (!IsNoPosition(costPos, endPositions, simbol)) {
-              
+            if (!IsNoPosition(map, costPos, simbol)) {
+
               let newNode = CreateNode(map, simbol, amphipodIndex, pos, costPos, cost);
               console.log();
-              alg3.CreateMatrix(JSON.parse(newNode.id)).Print();    
+              alg3.CreateMatrix(JSON.parse(newNode.id)).Print();
               neighbours.push(newNode);
 
-             
+
             }
           }
       }
       else {
-        for (let j = 0; j < endPositions.length; j++) {
-          let costPos = endPositions[j];
+        for (let j = 0; j < kEndPositions.length; j++) {
+          let costPos = kEndPositions[j];
 
           let cost = leeAlg.GetCost(costPos);
 
           if (cost > 0) {
 
-            let bottom = map[costPos.y + 1][costPos.x];
-
-          if (bottom != '#' && bottom != simbol)
-            continue;
+            if (!IsValidBottom(map, costPos, simbol))
+              continue;
 
             let newNode = CreateNode(map, simbol, amphipodIndex, pos, costPos, cost);
 
             //if (newNode.id == this.mEndNode) {
-              console.log();
-              alg3.CreateMatrix(JSON.parse(newNode.id)).Print();           
+            console.log();
+            alg3.CreateMatrix(JSON.parse(newNode.id)).Print();
             //}
 
             neighbours.push(newNode);
@@ -189,7 +179,7 @@ class SpecialGraph {
   }
 }
 
-let map = util.MapInput('./Day23Input.txt', (aElem, aIndex) => {
+let map = util.MapInput('./Day23TestInput.txt', (aElem, aIndex) => {
 
   let line = aElem.split('');
 
@@ -204,7 +194,9 @@ let map = util.MapInput('./Day23Input.txt', (aElem, aIndex) => {
 //console.log(map);
 
 let startNode = JSON.stringify(map);
-let endNode = GenerateEndNode(map);
+let result = GenerateEndNode(map);
+let endNode = result.endNode;
+let kEndPositions = result.endPositions;
 
 //alg3.CreateMatrix(JSON.parse(endNode)).Print();
 
