@@ -6,6 +6,13 @@ const alg3 = require('./Matrix.js');
 const kAmphipods = ['A', 'B', 'C', 'D'];
 
 function IsValidDirection(aValue) {
+
+  if ((aValue == 'A') ||
+    (aValue == 'B') ||
+    (aValue == 'C') ||
+    (aValue == 'D'))
+    return false;
+
   return true;
 }
 
@@ -24,7 +31,9 @@ function GetAmphipodsPositions(aMap) {
 }
 
 function IsEndPosition(aMap, aPos, aSimbol) {
-  let x = (aSimbol == 'A') ? 3 : (aSimbol == 'B') ? 5 : (aSimbol == 'C') ? 7 : 9;
+  let x = (aSimbol == 'A') ? 3 :
+    (aSimbol == 'B') ? 5 :
+      (aSimbol == 'C') ? 7 : 9;
 
   if ((aPos.x == x) && (aPos.y > 1) && (aPos.y < aMap.length - 1))
     return true;
@@ -70,11 +79,15 @@ function GenerateEndNode(aMap) {
   let map = util.CopyObject(aMap);
   let endPositions = [];
   for (let i = 0; i < map.length; i++)
-    for (let j = 0; j < map.length; j++) {
+    for (let j = 0; j < map[i].length; j++) {
       for (let k = 0; k < kAmphipods.length; k++)
         if (IsEndPosition(map, { x: j, y: i }, kAmphipods[k])) {
           map[i][j] = kAmphipods[k];
-          endPositions.push({ x: j, y: i });
+
+          if (endPositions[kAmphipods[k]] === undefined)
+            endPositions[kAmphipods[k]] = [];
+
+          endPositions[kAmphipods[k]].push({ x: j, y: i });
         }
     }
 
@@ -101,8 +114,8 @@ class SpecialGraph {
 
   ComputeCost(aNodeId) {
 
-    if (aNodeId == this.mEndNode)
-      console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    if (aNodeId == testNodeId)
+      console.log("STOP");
 
     let map = JSON.parse(aNodeId);
 
@@ -120,6 +133,7 @@ class SpecialGraph {
       let pos = amphipodsPositons[i];
       let simbol = map[pos.y][pos.x];
       let amphipodIndex = kAmphipods.indexOf(simbol);
+      let endPositions = kEndPositions[simbol];
 
       leeAlg.ComputeLee(pos);
 
@@ -139,6 +153,10 @@ class SpecialGraph {
             if (!IsNoPosition(map, costPos, simbol)) {
 
               let newNode = CreateNode(map, simbol, amphipodIndex, pos, costPos, cost);
+
+              if (newNode.id == testNodeId)
+                console.log("STOP");
+
               console.log();
               alg3.CreateMatrix(JSON.parse(newNode.id)).Print();
               neighbours.push(newNode);
@@ -148,8 +166,8 @@ class SpecialGraph {
           }
       }
       else {
-        for (let j = 0; j < kEndPositions.length; j++) {
-          let costPos = kEndPositions[j];
+        for (let j = 0; j < endPositions.length; j++) {
+          let costPos = endPositions[j];
 
           let cost = leeAlg.GetCost(costPos);
 
@@ -165,6 +183,9 @@ class SpecialGraph {
             alg3.CreateMatrix(JSON.parse(newNode.id)).Print();
             //}
 
+            if (newNode.id == testNodeId)
+              console.log("STOP");
+
             neighbours.push(newNode);
           }
         }
@@ -179,8 +200,7 @@ class SpecialGraph {
   }
 }
 
-let map = util.MapInput('./Day23TestInput.txt', (aElem, aIndex) => {
-
+function ParseInput(aElem, aIndex) {
   let line = aElem.split('');
 
   if (aIndex > 2) {
@@ -189,7 +209,13 @@ let map = util.MapInput('./Day23TestInput.txt', (aElem, aIndex) => {
   }
 
   return line;
-}, '\r\n', this);
+}
+
+let map = util.MapInput('./Day23TestInput.txt', ParseInput, '\r\n', this);
+
+let testNode = "#############\r\n#DD.........#\r\n###A#B#C#.###\r\n  #A#B#C#.#\r\n  #########";
+
+let testNodeId = JSON.stringify(testNode.split("\r\n").map(ParseInput, this));
 
 //console.log(map);
 
@@ -198,7 +224,7 @@ let result = GenerateEndNode(map);
 let endNode = result.endNode;
 let kEndPositions = result.endPositions;
 
-//alg3.CreateMatrix(JSON.parse(endNode)).Print();
+alg3.CreateMatrix(JSON.parse(endNode)).Print();
 
 let ss = new SpecialGraph(startNode, endNode);
 /*let oo = ss.GetNeighbours(JSON.stringify(map));
