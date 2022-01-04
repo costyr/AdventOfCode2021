@@ -15,11 +15,11 @@ class Lee {
     if (this.mMap[y][x] == '#')
       return false;
 
-    let posCharCode = this.mMap[y][x].charCodeAt(0);
-    if ((posCharCode >= "A".charCodeAt(0)) && (posCharCode <= "Z".charCodeAt(0)))
+   if (!this.mIsValidDirectionFunc(this.mMap[y][x]))
       return false;
 
-    if (!this.mIsValidDirectionFunc(this.mMap[y][x]))
+    let posCharCode = this.mMap[y][x].charCodeAt(0);
+    if ((posCharCode >= "A".charCodeAt(0)) && (posCharCode <= "Z".charCodeAt(0)))
       return false;
 
     return true;
