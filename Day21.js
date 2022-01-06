@@ -62,57 +62,56 @@ function PlayDiracDice(aPlayer1Start, aPlayer2Start, aDice) {
 }
 
 class DiracDiceQuantumGame {
-  constructor(aPlayer1Start, aPlayer1Score, aPlayer2Start, aPlayer2Score, aDiceValue, aMultivers, aCache, aWinnerCount, aPractice) {
+  constructor(aPlayer1Start, aPlayer1Score, aPlayer1RoolCount, aPlayer2Start, aPlayer2Score, aPlayer2RoolCount, aDiceValue, aResumePos, aMultivers, aWinnerCount) {
     this.mDice = { value: aDiceValue, count: 0 };
     this.mPlayer1 = { position: aPlayer1Start, score: aPlayer1Score };
     this.mPlayer2 = { position: aPlayer2Start, score: aPlayer2Score };
     this.mMultivers = aMultivers;
-    this.mCache = aCache;
     this.mWinnerCount = aWinnerCount;
-    this.mId = '';
-    this.mId += aPlayer1Start + "_" + aPlayer1Score + "_" + aPlayer2Start + "_" + aPlayer2Score + "_" + aDiceValue;
-    this.mPractice = aPractice;
+    this.mPlayer1RoolCount = aPlayer1RoolCount;
+    this.mPlayer2RoolCount = aPlayer2RoolCount;
+    this.mResumePos = aResumePos;
   }
 
   EvaluateNewGame(aGame) {
-    if (this.mCache[aGame.mId] !== undefined)
-      this.mWinnerCount[this.mCache[aGame.mId]]++;
-    else
-      this.mMultivers.push(aGame);
+    this.mMultivers.push(aGame);
   }
 
  RollDice() {
   
   this.mDice.count++;
 
-   if (this.mPactice)
-     return this.mDice.value;
+   //if (this.mPactice)
+   //  return this.mDice.value;
 
-   let ver1 = new DiracDiceQuantumGame(this.mPlayer1.position, this.mPlayer1.score, this.mPlayer2.position, this.mPlayer2.score, 1, this.mMultivers, this.mCache, this.mWinnerCount);
-   let ver2 = new DiracDiceQuantumGame(this.mPlayer1.position, this.mPlayer1.score, this.mPlayer2.position, this.mPlayer2.score, 2, this.mMultivers, this.mCache, this.mWinnerCount);
-   let ver3 = new DiracDiceQuantumGame(this.mPlayer1.position, this.mPlayer1.score, this.mPlayer2.position, this.mPlayer2.score, 3, this.mMultivers, this.mCache, this.mWinnerCount);
+  this.mResumePos ++;
+  if (this.mResumePos > 5) {
+    this.mResumePos = 0;
+    this.mPlayer1RoolCount = 0;
+    this.mPlayer2RoolCount = 0;
+  }
 
-   if (this.mDice.value == 0)
-   {
-     this.EvaluateNewGame(ver2);
-     this.EvaluateNewGame(ver3);
-     this.mDice.value = 1;
-     return 1;
-   }
-   else {
-     this.EvaluateNewGame(ver1);
-     this.EvaluateNewGame(ver2);
-     this.EvaluateNewGame(ver3);
-     return this.mDice.value;
-   }
+   let ver1 = new DiracDiceQuantumGame(this.mPlayer1.position, this.mPlayer1.score, this.mPlayer1RoolCount, this.mPlayer2.position, this.mPlayer2.score, this.mPlayer2RoolCount, 1, this.mResumePos, this.mMultivers, this.mWinnerCount);
+   let ver2 = new DiracDiceQuantumGame(this.mPlayer1.position, this.mPlayer1.score, this.mPlayer1RoolCount, this.mPlayer2.position, this.mPlayer2.score, this.mPlayer2RoolCount, 2, this.mResumePos, this.mMultivers, this.mWinnerCount);
+   let ver3 = new DiracDiceQuantumGame(this.mPlayer1.position, this.mPlayer1.score, this.mPlayer1RoolCount, this.mPlayer2.position, this.mPlayer2.score, this.mPlayer2RoolCount, 3, this.mResumePos, this.mMultivers, this.mWinnerCount);
+
+   this.EvaluateNewGame(ver1);
+   this.EvaluateNewGame(ver2);
+   this.EvaluateNewGame(ver3);
  }
 
  PlayOneRound() {
-   let player1RoolCount = this.RollDice();
-   player1RoolCount += this.RollDice();
-   player1RoolCount += this.RollDice();
+
+   for (let i = this.mResumePos; i < 3; i++) {
+     this.mPlayer1RoolCount += this.mDice.value;
+     this.RollDice();
+     return { ended : true, winner: -1};
+   }
+   //this.mPlayer1RoolCount += this.RollDice();
+   //this.mPlayer1RoolCount += this.RollDice();
    
-   this.mPlayer1.position = ComputeNewPosition(this.mPlayer1.position, player1RoolCount);
+   if (this.mResumePos < 3) {
+   this.mPlayer1.position = ComputeNewPosition(this.mPlayer1.position, this.mPlayer1RoolCount);
 
    this.mPlayer1.score += this.mPlayer1.position;
 
@@ -120,12 +119,17 @@ class DiracDiceQuantumGame {
    if (this.mPlayer1.score >= 21) {
      return { ended : true, winner: 0 };
    }
+  }
 
-   let player2RoolCount = this.RollDice();
-   player2RoolCount += this.RollDice();
-   player2RoolCount += this.RollDice();
+   for (let i = this.mResumePos; i < 6; i++) {
+     this.mPlayer2RoolCount += this.mDice.value;
+     this.RollDice();
+     return { ended : true, winner: -1};
+   }
+   //this.mPlayer2RoolCount += this.RollDice();
+   //this.mPlayer2RoolCount += this.RollDice();
 
-   this.mPlayer2.position = ComputeNewPosition(this.mPlayer2.position, player2RoolCount);
+   this.mPlayer2.position = ComputeNewPosition(this.mPlayer2.position, this.mPlayer2RoolCount);
 
    this.mPlayer2.score += this.mPlayer2.position;
 
@@ -152,33 +156,29 @@ console.log(PlayDiracDice(6, 9, deterministicDice));
 
 
 let multivers = [];
-let cache = [];
 let winnerCount = [0, 0];
 
-/*
-let firstGame = new DiracDiceQuantumGame(4, 0, 8, 0, 0, multivers, cache, winnerCount);
+
+let firstGame = new DiracDiceQuantumGame(4, 0, 0, 8, 0, 0, 0, 0, multivers, winnerCount);
 
 multivers.push(firstGame);
 while(multivers.length > 0) {
    let next = multivers[0];  
-   let result = next.Play();
+   console.log(multivers.length);
+   let result = next.PlayOneRound();
    if (result.ended) {
-     winnerCount[result.winner] ++;
+
+     if (result.winner >= 0)
+       winnerCount[result.winner] ++;
 
      //console.log(winnerCount);
-     console.log(cache);
      multivers.shift();
-
-     cache[next.mId] = result.winner;
-
-
    }
 }
 
 console.log(winnerCount);
-*/
 
-let practiceGame = new DiracDiceQuantumGame(4, 0, 8, 0, 3, multivers, cache, winnerCount, true);
+//let practiceGame = new DiracDiceQuantumGame(4, 0, 8, 0, 3, multivers, cache, winnerCount, true);
 
-practiceGame.Play();
-console.log("Dice roll count: " + practiceGame.mDice.count);
+//practiceGame.Play();
+//console.log("Dice roll count: " + practiceGame.mDice.count);

@@ -44,6 +44,24 @@ function CountOO(aTemplate) {
   return max - min;
 }
 
+function PrintStats(aLine) {
+
+  let gg = [];
+  for (let i = 0; i < aLine.length; i++)
+    if (gg[aLine[i]] == undefined)
+      gg[aLine[i]] = 1;
+    else
+      gg[aLine[i]] += 1;
+
+  let ff = [];
+  for (let key in gg)
+  {
+    ff.push(Math.round(gg[key] * 100 / aLine.length)); 
+  }
+
+  return ff.sort((a, b) => { return a - b;});
+}
+
 function CreatePolimer(aTemplate, aInsts, aStepCount) {
   
   let usedRules = [];
@@ -81,7 +99,8 @@ function CreatePolimer(aTemplate, aInsts, aStepCount) {
   //console.log(partOO);
   //let ss = CountOO(aTemplate);
 
-  console.log(/*ss + " " + tt + " " + aTemplate.join('')*/ line);
+  console.log(aTemplate.join(''));
+  //console.log(PrintStats(line) /*+ " " + ss + " " + tt + " " + aTemplate.join('') line*/);
 }
 
   //console.log(usedRules);
@@ -113,7 +132,7 @@ console.log(invInsts);
 
 for (let key in insts[1]) {
   console.log(key + "=>" + insts[1][key])
-let ret = CreatePolimer([key[0], [key[1]]], insts[1], 8);
+let ret = CreatePolimer([key[0], [key[1]]], insts[1], 7);
 
 console.log(ret);
 }

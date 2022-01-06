@@ -1,10 +1,10 @@
 const util = require('./Util.js');
 
 function ComputeTotal(aCubesMap) {
-  let total = 0;  
+  let total = 0;
   for (let key in aCubesMap)
     if (aCubesMap[key] > 0)
-      total ++;
+      total++;
   return total;
 }
 
@@ -12,119 +12,97 @@ function CountCubes(aCubes, aSize) {
   let cubesMap = [];
   aCubes.map((a, aIndex) => {
 
-      let intersect = 0;
-      for (let i = Math.max(-aSize, a.x1); i <= Math.min(a.x2, aSize); i++)  
-        for (let j = Math.max(-aSize, a.y1); j <= Math.min(a.y2, aSize); j++)  
-         for (let k = Math.max(-aSize, a.z1); k <= Math.min(a.z2, aSize); k++) {
-          let ptId = i + "_" + j + "_"+ k; 
-          
+    let intersect = 0;
+    for (let i = Math.max(-aSize, a.x1); i <= Math.min(a.x2, aSize); i++)
+      for (let j = Math.max(-aSize, a.y1); j <= Math.min(a.y2, aSize); j++)
+        for (let k = Math.max(-aSize, a.z1); k <= Math.min(a.z2, aSize); k++) {
+          let ptId = i + "_" + j + "_" + k;
+
           if (cubesMap[ptId] != undefined)
-            intersect ++;
+            intersect++;
 
-          cubesMap[ptId] = a.state ? 1 : 0;  
-         }
+          cubesMap[ptId] = a.state ? 1 : 0;
+        }
 
-         let total = ComputeTotal(cubesMap); 
-         console.log(total + " " +  aIndex + ": " + intersect);
+    let total = ComputeTotal(cubesMap);
+    console.log(total + " " + aIndex + ": " + intersect);
 
-    }, this);
+  }, this);
 
   return ComputeTotal(cubesMap);;
 }
 
-function ComputeCubeArea(aCube) {
-  return ((aCube.x2 - aCube.x1) + 1) * ((aCube.y2 - aCube.y1) + 1) * ((aCube.z2 - aCube.z1) + 1);    
-}
-
-function CountAllCubes(aCubes) {
-
-  console.log("0 0: 0");
-  let total = aCubes[0].state ? ComputeCubeArea(aCubes[0]) : 0; 
-  let noOverlappingCubes = [aCubes[0]];
-
-  for (let i = 1; i < aCubes.length; i++) {
-
-    let state1 = aCubes[i].state;
-
-    let hh = 0;
-    for (let j = 0; j < noOverlappingCubes.length; j++) {
-
-      let state2 = noOverlappingCubes[j].state;
-
-      let intersectArea = IntersectCubesSlow(aCubes[i], noOverlappingCubes[j]);
-      hh += intersectArea;
-
-      if (intersectArea > 0)
-      {
-        if (state1)
-        {
-          if (state2) {
-            total -= intersectArea;
-
-            if (total < 0)
-              total = 0;
-          }
-        }
-        else
-        {
-          if (state2) {
-            total -= intersectArea;
-
-            if (total < 0)
-              total = 0;
-          }
-        }            
-      }
-    }
-
-    if (state1) {
-      
-      let gg = ComputeCubeArea(aCubes[i]);
-      
-      total += gg;
-    }
-
-    console.log(total + " " + i + ": " + hh);
-
-    noOverlappingCubes.push(aCubes[i]);
+function ComputeTotal2(aNoOverlappingCubes) {
+  let total = 0;
+  for (let k = 0; k < aNoOverlappingCubes.length; k++) {
+    if (aNoOverlappingCubes[k].state)
+      total += ComputeCubeArea(aNoOverlappingCubes[k]);
   }
 
   return total;
 }
 
+function ComputeCubeArea(aCube) {
+  return ((aCube.x2 - aCube.x1) + 1) * ((aCube.y2 - aCube.y1) + 1) * ((aCube.z2 - aCube.z1) + 1);
+}
+
+function CountAllCubes(aCubes) {
+
+  let noOverlappingCubes = [aCubes[0]];
+  console.log(ComputeTotal2(noOverlappingCubes) + " " + 0 + " " + 0);
+  for (let i = 1; i < aCubes.length; i++) {
+
+    let state1 = aCubes[i].state;
+
+    let newNoOver = [];
+    let partIntersect = 0;
+    for (let j = 0; j < noOverlappingCubes.length; j++) {
+
+      let intersectArea = IntersectCubes(aCubes[i], noOverlappingCubes[j]);
+
+      if (intersectArea > 0) {
+        ComputeIntersectRects(aCubes[i], noOverlappingCubes[j], state1, newNoOver);
+        partIntersect += intersectArea;
+      }
+      else
+        newNoOver.push(noOverlappingCubes[j]);
+    }
+
+    noOverlappingCubes = newNoOver;
+
+    console.log(ComputeTotal2(noOverlappingCubes) + " " + i + " " + partIntersect);
+  }
+
+  console.log(noOverlappingCubes);
+
+  return ComputeTotal2(noOverlappingCubes);
+}
+
 function IntersectCubes(aCube1, aCube2) {
-  let minX = Math.min(aCube1.x1, aCube2.x2); 
-  let maxX = Math.max(aCube1.x1, aCube1.x2); 
   
-  let minY = Math.min(aCube1.y1, aCube2.y2); 
-  let maxY = Math.max(aCube1.y1, aCube1.y2); 
-
-  let minZ = Math.min(aCube1.z1, aCube2.z2); 
-  let maxZ = Math.max(aCube1.z1, aCube1.z2);
-
-  let xOverlap = Math.max(0, Math.min(aCube1.x2, aCube2.x2) - Math.max(aCube1.x1, aCube2.x1));
-  let yOverlap = Math.max(0, Math.min(aCube1.y2, aCube2.y2) - Math.max(aCube1.y1, aCube2.y1));
-  let zOverlap = Math.max(0, Math.min(aCube1.z2, aCube2.z2) - Math.max(aCube1.z1, aCube2.z1));
+  let xOverlap = Math.max(-1, Math.min(aCube1.x2, aCube2.x2) - Math.max(aCube1.x1, aCube2.x1)) + 1;
+  let yOverlap = Math.max(-1, Math.min(aCube1.y2, aCube2.y2) - Math.max(aCube1.y1, aCube2.y1)) + 1;
+  let zOverlap = Math.max(-1, Math.min(aCube1.z2, aCube2.z2) - Math.max(aCube1.z1, aCube2.z1)) + 1;
 
   let overlapArea = xOverlap * yOverlap * zOverlap;
 
-  if (overlapArea)
-    return (xOverlap + 1) * (yOverlap + 1) * (zOverlap + 1);
+  //if (overlapArea)
+  //  return (xOverlap + 1) * (yOverlap + 1) * (zOverlap + 1);
 
-  return 0;
+  return overlapArea;
 }
 
 function CubeToMap(aCube, aMap) {
-  for (let i = aCube.x1; i <= aCube.x2; i++)  
-  for (let j = aCube.y1; j <= aCube.y2; j++)  
-   for (let k = aCube.z1; k <= aCube.z2; k++) {
-    let ptId = i + "_" + j + "_"+ k; 
-    
-     if (aMap[ptId] === undefined)
-       aMap[ptId] = 0;
-     else
-       aMap[ptId] += 1;
-   }
+  for (let i = aCube.x1; i <= aCube.x2; i++)
+    for (let j = aCube.y1; j <= aCube.y2; j++)
+      for (let k = aCube.z1; k <= aCube.z2; k++) {
+        let ptId = i + "_" + j + "_" + k;
+
+        if (aMap[ptId] === undefined)
+          aMap[ptId] = 0;
+        else
+          aMap[ptId] += 1;
+      }
 }
 
 function IntersectCubesSlow(aCube1, aCube2) {
@@ -134,41 +112,218 @@ function IntersectCubesSlow(aCube1, aCube2) {
   CubeToMap(aCube2, cubesMap);
 
   let total = 0;
-  for (let key in cubesMap)
-    total += cubesMap[key];
+  for (let key in cubesMap) {
+    if (cubesMap[key] > 0)
+    total ++;
+  }
   return total;
 }
 
-let cubes = util.MapInput('./Day22TestInput4.txt', (aElem) => {
+function IsIncluded(aCube1, aCube2) {
+  if (aCube1.x1 >= aCube2.x1 && aCube1.x1 <= aCube2.x2 &&
+    aCube1.x2 >= aCube2.x1 && aCube1.x2 <= aCube2.x2 &&
+    aCube1.y1 >= aCube2.y1 && aCube1.y1 <= aCube2.y2 &&
+    aCube1.y2 >= aCube2.y1 && aCube1.y2 <= aCube2.y2 &&
+    aCube1.z1 >= aCube2.z1 && aCube1.z1 <= aCube2.z2 &&
+    aCube1.z2 >= aCube2.z1 && aCube1.z2 <= aCube2.z2)
+    return true;
+  return false;
+}
 
-    let bb = aElem.split(' ');
+function IsIncluded2(aCube1, aCube2, aCube3) {
+  if (IsIncluded(aCube1, aCube2)) {
+    aCube1.state = aCube2.state;
+    return true;
+  }
+  else if (IsIncluded(aCube1, aCube3)) {
+    aCube1.state = aCube3.state;
+    return true;
+  }
+  return false;
+}
 
-    let cc = bb[1].split(',').map(a => { 
-        let hh = a.split('='); 
-        return hh[1].split('..').map(a => {return parseInt(a);});
-    });
+function ComputeDiffCubes(aMaxCube, aMidCube, aZCoord, aDiffCubes) {
+  let leftCube = {
+    x1: aMaxCube.minX, x2: aMidCube.x1 - 1, y1: aMidCube.y1, y2: aMidCube.y2,
+    z1: aZCoord.z1, z2: aZCoord.z2, state: true
+  };
 
-    return { state: (bb[0] == 'on'), x1: cc[0][0], x2: cc[0][1], y1: cc[1][0], y2: cc[1][1], z1: cc[2][0], z2: cc[2][1] };
-    }, '\r\n', this);
+  let rightCube = {
+    x1: aMidCube.x2 + 1, x2: aMaxCube.maxX, y1: aMidCube.y1, y2: aMidCube.y2,
+    z1: aZCoord.z1, z2: aZCoord.z2, state: true
+  };
+
+  let leftTopCube = {
+    x1: aMaxCube.minX, x2: aMidCube.x1 - 1, y1: aMidCube.y2 + 1, y2: aMaxCube.maxY,
+    z1: aZCoord.z1, z2: aZCoord.z2, state: true
+  };
+
+  let topCube = {
+    x1: aMidCube.x1, x2: aMidCube.x2, y1: aMidCube.y2 + 1, y2: aMaxCube.maxY,
+    z1: aZCoord.z1, z2: aZCoord.z2, state: true
+  };
+
+  let rightTopCube = {
+    x1: aMidCube.x2 + 1, x2: aMaxCube.maxX, y1: aMidCube.y2 + 1, y2: aMaxCube.maxY,
+    z1: aZCoord.z1, z2: aZCoord.z2, state: true
+  };
+
+  let leftBotomCube = {
+    x1: aMaxCube.minX, x2: aMidCube.x1 - 1, y1: aMaxCube.minY, y2: aMidCube.y1 - 1,
+    z1: aZCoord.z1, z2: aZCoord.z2, state: true
+  };
+
+  let botomCube = {
+    x1: aMidCube.x1, x2: aMidCube.x2, y1: aMaxCube.minY, y2: aMidCube.y1 - 1,
+    z1: aZCoord.z1, z2: aZCoord.z2, state: true
+  };
+
+  let rightBotomCube = {
+    x1: aMidCube.x2 + 1, x2: aMaxCube.maxX, y1: aMaxCube.minY, y2: aMidCube.y1 - 1,
+    z1: aZCoord.z1, z2: aZCoord.z2, state: true
+  };
+
+  aDiffCubes.push(leftCube);
+  aDiffCubes.push(rightCube);
+  aDiffCubes.push(leftTopCube);
+  aDiffCubes.push(topCube);
+  aDiffCubes.push(rightTopCube);
+  aDiffCubes.push(leftBotomCube);
+  aDiffCubes.push(botomCube);
+  aDiffCubes.push(rightBotomCube);
+}
+
+function MergeDiffCubes(aDiffCubes, aCube1, aCube2) {
+
+  let newCube = { x1: Number.MAX_SAFE_INTEGER, x2: -Number.MAX_SAFE_INTEGER, y1: Number.MAX_SAFE_INTEGER, y2: -Number.MAX_SAFE_INTEGER, z1: Number.MAX_SAFE_INTEGER, z2: -Number.MAX_SAFE_INTEGER };
+
+  aDiffCubes.map(a => {
+    
+    let diffCubeArrea = ComputeCubeArea(a);
+
+    if (IsIncluded2(a, aCube1, aCube2) && diffCubeArrea > 0) {
+    
+    newCube.x1 = Math.min(newCube.x1, a.x1);
+    newCube.x2 = Math.max(newCube.x2, a.x2);
+
+    newCube.y1 = Math.min(newCube.y1, a.y1);
+    newCube.y2 = Math.max(newCube.y2, a.y2);
+
+    newCube.z1 = Math.min(newCube.z1, a.z1);
+    newCube.z2 = Math.max(newCube.z2, a.z2);
+    }
+    }, this);
+
+  return newCube;
+}
+
+function ComputeIntersectRects(aCube1, aCube2, aState, aNoOvelapRects) {
+
+  let minX = Math.min(aCube1.x1, aCube1.x2, aCube2.x1, aCube2.x2);
+  let maxX = Math.max(aCube1.x1, aCube1.x2, aCube2.x1, aCube2.x2);
+
+  let minY = Math.min(aCube1.y1, aCube1.y2, aCube2.y1, aCube2.y2);
+  let maxY = Math.max(aCube1.y1, aCube1.y2, aCube2.y1, aCube2.y2);
+
+  let minZ = Math.min(aCube1.z1, aCube1.z2, aCube2.z1, aCube2.z2);
+  let maxZ = Math.max(aCube1.z1, aCube1.z2, aCube2.z1, aCube2.z2);
+
+  let maxCube = { minX: minX, maxX: maxX, minY: minY, maxY: maxY, minZ: minZ, maxZ: maxZ };
+
+  let midCube = {
+    x1: Math.max(aCube1.x1, aCube2.x1), x2: Math.min(aCube1.x2, aCube2.x2),
+    y1: Math.max(aCube1.y1, aCube2.y1), y2: Math.min(aCube1.y2, aCube2.y2),
+    z1: Math.max(aCube1.z1, aCube2.z1), z2: Math.min(aCube1.z2, aCube2.z2),
+    state: aState
+  };
+
+  let diffCubes = [];
+
+  if (aNoOvelapRects != undefined)
+    aNoOvelapRects.push(midCube);
+
+  ComputeDiffCubes(maxCube, midCube, { z1: midCube.z1, z2: midCube.z2 }, diffCubes);
+
+  let gg = [];
+  ComputeDiffCubes(maxCube, midCube, { z1: midCube.z2 + 1, z2: maxZ }, gg);
+
+  let uu = [];
+  ComputeDiffCubes(maxCube, midCube, { z1: minZ, z2: midCube.z1 - 1 }, uu);
+
+  gg.push({ x1: midCube.x1, x2: midCube.x2, y1: midCube.y1, y2: midCube.y2, z1: midCube.z2 + 1, z2: maxZ });
+
+  diffCubes.push(MergeDiffCubes(gg, aCube1, aCube2));
+
+  uu.push({ x1: midCube.x1, x2: midCube.x2, y1: midCube.y1, y2: midCube.y2, z1: minZ, z2: midCube.z1 - 1 });
+
+  diffCubes.push(MergeDiffCubes(uu, aCube1, aCube2));
+
+  let area1 = ComputeCubeArea(aCube1) + ComputeCubeArea(aCube2);
+
+  let area2 = ComputeCubeArea(midCube) * 2;
+  let ff = [];
+  for (let i = 0; i < diffCubes.length; i++) {
+    let diffCubeArrea = ComputeCubeArea(diffCubes[i]);
+    if (IsIncluded2(diffCubes[i], aCube1, aCube2) && diffCubeArrea > 0) {
+      area2 += diffCubeArrea;
+      ff.push(diffCubeArrea);
+      if (aNoOvelapRects != undefined) {
+
+        let found = false;
+        for (let j = 0; j < aNoOvelapRects.length; j++)
+          if (aNoOvelapRects[j].x1 == diffCubes[i].x1 && aNoOvelapRects[j].x2 == diffCubes[i].x2 &&
+            aNoOvelapRects[j].y1 == diffCubes[i].y1 && aNoOvelapRects[j].y2 == diffCubes[i].y2 &&
+            aNoOvelapRects[j].z1 == diffCubes[i].z1 && aNoOvelapRects[j].z2 == diffCubes[i].z2 ) {
+            found = true;
+            //aNoOvelapRects[j].state = diffCubes[i].state;
+            break;
+          }
+
+        if (!found)
+          aNoOvelapRects.push(diffCubes[i]);
+      }
+    }
+    else
+      ff.push(0);
+  }
+
+  if (area1 != area2)
+    console.log("Test cube intersect: " + area1 + " = " + area2);
+}
+
+let cubes = util.MapInput('./Day22TestInput.txt', (aElem) => {
+
+  let bb = aElem.split(' ');
+
+  let cc = bb[1].split(',').map(a => {
+    let hh = a.split('=');
+    return hh[1].split('..').map(a => { return parseInt(a); });
+  });
+
+  return { state: (bb[0] == 'on'), x1: cc[0][0], x2: cc[0][1], y1: cc[1][0], y2: cc[1][1], z1: cc[2][0], z2: cc[2][1] };
+}, '\r\n', this);
 
 for (let i = 0; i < cubes.length; i++)
   console.log(i + " " + JSON.stringify(cubes[i]) + " " + ComputeCubeArea(cubes[i]));
 
-//IntersectCubes(cubes[14], cubes[49]);
-/*
+//IntersectCubes(cubes[6], cubes[14]);
+
 for (let i = 0; i < cubes.length; i++)
-  for (let j = i + 1; j < cubes.length; j++)
-  {
+  for (let j = i + 1; j < cubes.length; j++) {
     let ff = IntersectCubes(cubes[i], cubes[j]);
     let ff2 = IntersectCubesSlow(cubes[i], cubes[j]);
 
+    console.log(i + " " + j + ": " + ff);
     if (ff != ff2) {
-      console.log(i + " " + j + ": " + ff + " = " + ff2);
+     console.log(ff + " != " + ff2);
     }
-  }*/
 
-console.log(CountCubes(cubes, 50));
+    if (ff > 0)
+      ComputeIntersectRects(cubes[i], cubes[j]);
+  }
+
+//console.log(CountCubes(cubes, 50));
 
 //IntersectCubes(cubes[0], cubes[1]);
 
-console.log(CountAllCubes(cubes));
+//console.log(CountAllCubes(cubes));
