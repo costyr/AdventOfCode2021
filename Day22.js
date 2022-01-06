@@ -79,7 +79,7 @@ function CountAllCubes(aCubes) {
 }
 
 function IntersectCubes(aCube1, aCube2) {
-  
+
   let xOverlap = Math.max(-1, Math.min(aCube1.x2, aCube2.x2) - Math.max(aCube1.x1, aCube2.x1)) + 1;
   let yOverlap = Math.max(-1, Math.min(aCube1.y2, aCube2.y2) - Math.max(aCube1.y1, aCube2.y1)) + 1;
   let zOverlap = Math.max(-1, Math.min(aCube1.z2, aCube2.z2) - Math.max(aCube1.z1, aCube2.z1)) + 1;
@@ -288,7 +288,23 @@ function ComputeIntersectRects(aCube1, aCube2, aState, aNoOvelapRects) {
   }
 
   if (area1 != area2)
-    console.log("Test cube intersect: " + area1 + " = " + area2);
+    console.log("Test cube intersect: " + area1 + " != " + area2);
+}
+
+function TestCubesIntersect(aCubes) {
+  for (let i = 0; i < aCubes.length; i++)
+  for (let j = i + 1; j < aCubes.length; j++) {
+    let ff = IntersectCubes(aCubes[i], aCubes[j]);
+    let ff2 = IntersectCubesSlow(aCubes[i], aCubes[j]);
+
+    console.log(i + " " + j + ": " + ff);
+    if (ff != ff2) {
+     console.log(ff + " != " + ff2);
+    }
+
+    if (ff > 0)
+      ComputeIntersectRects(aCubes[i], aCubes[j]);
+  }
 }
 
 let cubes = util.MapInput('./Day22TestInput.txt', (aElem) => {
@@ -308,22 +324,8 @@ for (let i = 0; i < cubes.length; i++)
 
 //IntersectCubes(cubes[6], cubes[14]);
 
-for (let i = 0; i < cubes.length; i++)
-  for (let j = i + 1; j < cubes.length; j++) {
-    let ff = IntersectCubes(cubes[i], cubes[j]);
-    let ff2 = IntersectCubesSlow(cubes[i], cubes[j]);
-
-    console.log(i + " " + j + ": " + ff);
-    if (ff != ff2) {
-     console.log(ff + " != " + ff2);
-    }
-
-    if (ff > 0)
-      ComputeIntersectRects(cubes[i], cubes[j]);
-  }
-
-//console.log(CountCubes(cubes, 50));
+console.log(CountCubes(cubes, 50));
 
 //IntersectCubes(cubes[0], cubes[1]);
 
-//console.log(CountAllCubes(cubes));
+console.log(CountAllCubes(cubes));
