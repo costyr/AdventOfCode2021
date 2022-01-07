@@ -103,10 +103,14 @@ function CountAllCubes(aCubes) {
       for (let n = 0; n < stepDiffs[k].length; n++)
          if (!FindCube(stepDiffs[k][n], newNoOver))
          {
-           if((i != 2) && !IsIncluded(stepDiffs[k][n], aCubes[i]))
+          if((i == 2) && IsIncluded(stepDiffs[k][n], aCubes[i])) {
+
+            if (!FindCube(stepDiffs[k][n], hh))
+              hh.push(stepDiffs[k][n]);
+          }
+
             newNoOver.push(stepDiffs[k][n]); 
-           else
-             hh.push(stepDiffs[k][n]);
+             
          }
     }   
 
