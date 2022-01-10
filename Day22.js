@@ -267,6 +267,17 @@ function MergeDiffCubes(aDiffCubes, aCube1, aCube2) {
   return newCube;
 }
 
+function ComputeMidCube(aCube1, aCube2) {
+  let midCube = {
+    x1: Math.max(aCube1.x1, aCube2.x1), x2: Math.min(aCube1.x2, aCube2.x2),
+    y1: Math.max(aCube1.y1, aCube2.y1), y2: Math.min(aCube1.y2, aCube2.y2),
+    z1: Math.max(aCube1.z1, aCube2.z1), z2: Math.min(aCube1.z2, aCube2.z2),
+    state: true
+  };
+
+  return midCube;
+}
+
 function ComputeIntersectRects(aCube1, aCube2, aState, aNoOvelapRects) {
 
   let minX = Math.min(aCube1.x1, aCube1.x2, aCube2.x1, aCube2.x2);
@@ -348,6 +359,74 @@ function TestCubesIntersect(aCubes) {
     }
 }
 
+function CountOnCubes(aCubes) {
+
+  let total = 0;
+  for (let i = 0; i < aCubes.length - 2; i++) {
+
+    let gg = [];
+    for (let j = 0; j < i; j++)
+    {
+       let ff = IntersectCubes(aCubes[i], aCubes[j]);
+
+       if (ff > 0) {
+         if (aCubes[j].state) {
+
+          let mid = ComputeMidCube(aCubes[i], aCubes[j]);
+          if (!FindCube(mid, gg))
+            gg.push(mid);
+
+           total -= ff;
+         }
+       }
+    }
+
+   
+
+    if (aCubes[i].state) {
+
+      let intersect = 0;
+      let used = [];
+      while (1) {
+  
+        let newGG = [];
+        for (let k = 0; k < gg.length; k++)
+          for (let l = k + 1; l < gg.length; l++)
+          {
+            let ff = IntersectCubes(gg[k], gg[l]);
+  
+            if (ff > 0) {
+              let mid = ComputeMidCube(gg[k], gg[l]);
+  
+              let ff = IntersectCubes(aCubes[i], mid);
+              if (ff > 0) {
+
+
+              if (!FindCube(mid, used)) {
+                intersect += ff;
+                used.push(mid);
+              }
+            }
+              if (!FindCube(mid, newGG))
+                newGG.push(mid);
+          }
+        }
+  
+        if (newGG.length == 0)
+          break;
+  
+        gg = newGG;
+      }
+
+      total += ComputeCubeArea(aCubes[i]) + intersect;
+    }
+
+   console.log(total + " " + i + " " + gg.length);   
+  }
+
+  return total;
+}
+
 let cubes = util.MapInput('./Day22TestInput2.txt', (aElem) => {
 
   let bb = aElem.split(' ');
@@ -365,8 +444,10 @@ for (let i = 0; i < cubes.length; i++)
 
 //IntersectCubes(cubes[6], cubes[14]);
 
-//console.log(CountCubes(cubes, 50));
+console.log(CountCubes(cubes, 50));
 
 //IntersectCubes(cubes[0], cubes[1]);
 
-console.log(CountAllCubes(cubes));
+//console.log(CountAllCubes(cubes));
+
+console.log(CountOnCubes(cubes));
