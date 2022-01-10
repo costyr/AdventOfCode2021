@@ -381,9 +381,30 @@ function CountOnCubes(aCubes) {
        }
     }
 
+    while (1) {
+
+      let found = false;
+    for (let k = 0; k < gg.length; k++)
+    {
+      for (let l = k + 1; l < gg.length; l++)
+      {
+        if (IsIncluded(gg[k], gg[l])) {
+          gg.splice(k, 1);
+          found = true;
+          break;
+        }
+      }
+
+      if (found)
+        break;
+    }
+
+    if (!found)
+      break;
+  }
    
 
-    if (aCubes[i].state) {
+    /*if (aCubes[i].state) {
 
       let intersect = 0;
       let used = [];
@@ -419,7 +440,7 @@ function CountOnCubes(aCubes) {
       }
 
       total += ComputeCubeArea(aCubes[i]) + intersect;
-    }
+    }*/
 
    console.log(total + " " + i + " " + gg.length);   
   }
