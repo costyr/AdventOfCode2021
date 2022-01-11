@@ -359,6 +359,31 @@ function TestCubesIntersect(aCubes) {
     }
 }
 
+function ComputeCubesArea(aCubes) {
+  let total = 0;
+  for (let i = 0; i < aCubes.length; i++) {
+
+    let ii = 0;
+    let ee = [];
+    for (let j = 0; j < i; j++) {
+      let ff = IntersectCubes(aCubes[i], aCubes[j]);
+      if (ff > 0) {
+        ee.push(ComputeMidCube(aCubes[i], aCubes[j]));
+        ii += ff;
+      }
+    }
+
+    if (ee.length == 2)
+      ii -= IntersectCubes(ee[0], ee[1]);
+    else
+      ii = ComputeCubesArea(ee);
+
+    total += ComputeCubeArea(aCubes[i]) - ii;
+  }
+
+  return total;
+}
+
 function CountOnCubes(aCubes) {
 
   let total = 0;
@@ -376,14 +401,14 @@ function CountOnCubes(aCubes) {
           if (!FindCube(mid, gg))
             gg.push(mid);
 
-           total -= ff;
+           //total -= ff;
          }
        }
     }
 
     while (1) {
 
-      let found = false;
+   let found = false;
     for (let k = 0; k < gg.length; k++)
     {
       for (let l = k + 1; l < gg.length; l++)
@@ -403,46 +428,14 @@ function CountOnCubes(aCubes) {
       break;
   }
    
+  cc = ComputeCubesArea(gg);
 
-    /*if (aCubes[i].state) {
+    if (aCubes[i].state)
+      total += ComputeCubeArea(aCubes[i]) - cc; 
+    else
+      total -= cc;
 
-      let intersect = 0;
-      let used = [];
-      while (1) {
-  
-        let newGG = [];
-        for (let k = 0; k < gg.length; k++)
-          for (let l = k + 1; l < gg.length; l++)
-          {
-            let ff = IntersectCubes(gg[k], gg[l]);
-  
-            if (ff > 0) {
-              let mid = ComputeMidCube(gg[k], gg[l]);
-  
-              let ff = IntersectCubes(aCubes[i], mid);
-              if (ff > 0) {
-
-
-              if (!FindCube(mid, used)) {
-                intersect += ff;
-                used.push(mid);
-              }
-            }
-              if (!FindCube(mid, newGG))
-                newGG.push(mid);
-          }
-        }
-  
-        if (newGG.length == 0)
-          break;
-  
-        gg = newGG;
-      }
-
-      total += ComputeCubeArea(aCubes[i]) + intersect;
-    }*/
-
-   console.log(total + " " + i + " " + gg.length);   
+   console.log(total + " " + i + " " + cc);   
   }
 
   return total;
