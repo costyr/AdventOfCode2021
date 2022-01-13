@@ -419,6 +419,7 @@ function CountOnCubes(aCubes, aCubesCount) {
 
     let ggOn = [];
     let ggOff = [];
+    let ggOff2 = [];
     let totalVV = 0;
     for (let j = 0; j < i; j++) {
       let ff = IntersectCubes(aCubes[i], aCubes[j]);
@@ -431,16 +432,23 @@ function CountOnCubes(aCubes, aCubesCount) {
           if (!FindCube(mid, ggOn))
             ggOn.push(mid);
 
-         if (aCubes[j].state) {   
+         if (aCubes[j].state) { 
           for (let k = 0; k < ggOff.length; k++) {
             if (IsIncluded(ggOff[k], mid))
               ggOff.splice(k, 1); 
-
+            else {
             let vv = IntersectCubes(ggOff[k], mid);
             if (vv > 0) {
-              console.log("Found on/off partial intersection: " + vv);
-              totalVV += vv;
+              let midOff = ComputeMidCube(ggOff[k], mid);
+
+                if (!FindCube(midOff, ggOff2)) {
+
+              ggOff2.push(midOff);
             }
+          }
+          }
+
+         
           }
         }
         if (!aCubes[j].state) {
@@ -453,6 +461,15 @@ function CountOnCubes(aCubes, aCubesCount) {
     }
 
     ReduceIncludedCubes(ggOn);
+
+    if (ggOff2.length > 0) {
+      ReduceIncludedCubes(ggOff2);
+
+      let uu = ComputeCubesArea(ggOff2);
+
+      console.log("Found on/off partial intersection: " + uu);
+      totalVV += uu;
+    }
 
     let ccOff = ComputeCubesArea(ggOff) - totalVV;
 
