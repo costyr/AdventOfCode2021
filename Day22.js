@@ -8,24 +8,31 @@ function ComputeTotal(aCubesMap) {
   return total;
 }
 
-function CountCubes(aCubes, aSize) {
+function CountCubes(aCubes, aSize, aCubesCount) {
   let cubesMap = [];
   aCubes.map((a, aIndex) => {
 
+    if (aIndex > aCubesCount - 1)
+      return;
+
     let intersect = 0;
+    let offIntersect = 0;
     for (let i = Math.max(-aSize, a.x1); i <= Math.min(a.x2, aSize); i++)
       for (let j = Math.max(-aSize, a.y1); j <= Math.min(a.y2, aSize); j++)
         for (let k = Math.max(-aSize, a.z1); k <= Math.min(a.z2, aSize); k++) {
           let ptId = i + "_" + j + "_" + k;
 
-          if (cubesMap[ptId] != undefined)
+          if (cubesMap[ptId] == 1)
             intersect++;
+
+          if (cubesMap[ptId] == 0)
+            offIntersect++;
 
           cubesMap[ptId] = a.state ? 1 : 0;
         }
 
     let total = ComputeTotal(cubesMap);
-    console.log(total + " " + aIndex + ": " + intersect);
+    console.log(total + " " + aIndex + ": " + intersect + " " + offIntersect);
 
   }, this);
 
@@ -60,12 +67,11 @@ function FindCube(aCube, aNoOverlappingCubes) {
 
 function TestIntersections(aCubes) {
   for (let i = 0; i < aCubes.length; i++)
-  for (let j = i + 1; j < aCubes.length; j++)
-  {
-    let ff = IntersectCubesSlow(aCubes[i], aCubes[j]);
-    if (ff > 0)
-      console.log(i + " " + j + ": " + ff);
-  }
+    for (let j = i + 1; j < aCubes.length; j++) {
+      let ff = IntersectCubesSlow(aCubes[i], aCubes[j]);
+      if (ff > 0)
+        console.log(i + " " + j + ": " + ff);
+    }
 }
 
 function CountAllCubes(aCubes) {
@@ -90,8 +96,7 @@ function CountAllCubes(aCubes) {
 
         stepDiffs.push(partNoOver);
       }
-      else
-      {
+      else {
         if (!FindCube(noOverlappingCubes[j], newNoOver))
           newNoOver.push(noOverlappingCubes[j]);
       }
@@ -101,18 +106,17 @@ function CountAllCubes(aCubes) {
     for (let k = 0; k < stepDiffs.length; k++) {
       TestIntersections(stepDiffs[k]);
       for (let n = 0; n < stepDiffs[k].length; n++)
-         if (!FindCube(stepDiffs[k][n], newNoOver))
-         {
-          if((i == 2) && IsIncluded(stepDiffs[k][n], aCubes[i])) {
+        if (!FindCube(stepDiffs[k][n], newNoOver)) {
+          if ((i == 2) && IsIncluded(stepDiffs[k][n], aCubes[i])) {
 
             if (!FindCube(stepDiffs[k][n], hh))
               hh.push(stepDiffs[k][n]);
           }
 
-            newNoOver.push(stepDiffs[k][n]); 
-             
-         }
-    }   
+          newNoOver.push(stepDiffs[k][n]);
+
+        }
+    }
 
     TestIntersections(hh);
 
@@ -359,6 +363,27 @@ function TestCubesIntersect(aCubes) {
     }
 }
 
+function ReduceIncludedCubes(aCubes) {
+  while (1) {
+    let found = false;
+    for (let i = 0; i < aCubes.length; i++) {
+      for (let j = i + 1; j < aCubes.length; j++) {
+        if (IsIncluded(aCubes[i], aCubes[j])) {
+          aCubes.splice(i, 1);
+          found = true;
+          break;
+        }
+      }
+
+      if (found)
+        break;
+    }
+
+    if (!found)
+      break;
+  }
+}
+
 function ComputeCubesArea(aCubes) {
   let total = 0;
   for (let i = 0; i < aCubes.length; i++) {
@@ -373,9 +398,12 @@ function ComputeCubesArea(aCubes) {
       }
     }
 
-    if (ee.length == 2)
-      ii -= IntersectCubes(ee[0], ee[1]);
-    else
+    if (ee.length == 2) {
+      let ff = IntersectCubes(ee[0], ee[1]);
+      if (ff > 0)
+        ii -= ff;
+    }
+    else if (ee.length > 2)
       ii = ComputeCubesArea(ee);
 
     total += ComputeCubeArea(aCubes[i]) - ii;
@@ -384,64 +412,64 @@ function ComputeCubesArea(aCubes) {
   return total;
 }
 
-function CountOnCubes(aCubes) {
+function CountOnCubes(aCubes, aCubesCount) {
 
   let total = 0;
-  for (let i = 0; i < aCubes.length - 2; i++) {
+  for (let i = 0; i < aCubesCount; i++) {
 
-    let gg = [];
-    for (let j = 0; j < i; j++)
-    {
-       let ff = IntersectCubes(aCubes[i], aCubes[j]);
+    let ggOn = [];
+    let ggOff = [];
+    let totalVV = 0;
+    for (let j = 0; j < i; j++) {
+      let ff = IntersectCubes(aCubes[i], aCubes[j]);
 
-       if (ff > 0) {
-         if (aCubes[j].state) {
+      if (ff > 0) {
 
-          let mid = ComputeMidCube(aCubes[i], aCubes[j]);
-          if (!FindCube(mid, gg))
-            gg.push(mid);
+        let mid = ComputeMidCube(aCubes[i], aCubes[j]);
 
-           //total -= ff;
-         }
-       }
-    }
+        
+          if (!FindCube(mid, ggOn))
+            ggOn.push(mid);
 
-    while (1) {
+         if (aCubes[j].state) {   
+          for (let k = 0; k < ggOff.length; k++) {
+            if (IsIncluded(ggOff[k], mid))
+              ggOff.splice(k, 1); 
 
-   let found = false;
-    for (let k = 0; k < gg.length; k++)
-    {
-      for (let l = k + 1; l < gg.length; l++)
-      {
-        if (IsIncluded(gg[k], gg[l])) {
-          gg.splice(k, 1);
-          found = true;
-          break;
+            let vv = IntersectCubes(ggOff[k], mid);
+            if (vv > 0) {
+              console.log("Found on/off partial intersection: " + vv);
+              totalVV += vv;
+            }
+          }
         }
-      }
+        if (!aCubes[j].state) {
+          if (!FindCube(mid, ggOff))
+            ggOff.push(mid);
+         }
 
-      if (found)
-        break;
+        //total -= ff;
+      }
     }
 
-    if (!found)
-      break;
-  }
-   
-  cc = ComputeCubesArea(gg);
+    ReduceIncludedCubes(ggOn);
+
+    let ccOff = ComputeCubesArea(ggOff) - totalVV;
+
+    cc = ComputeCubesArea(ggOn) - ccOff;
 
     if (aCubes[i].state)
-      total += ComputeCubeArea(aCubes[i]) - cc; 
+      total += ComputeCubeArea(aCubes[i]) - cc;
     else
       total -= cc;
 
-   console.log(total + " " + i + " " + cc);   
+    console.log(total + " " + i + " " + cc + " " + ccOff);
   }
 
   return total;
 }
 
-let cubes = util.MapInput('./Day22TestInput2.txt', (aElem) => {
+let cubes = util.MapInput('./Day22TestInput3.txt', (aElem) => {
 
   let bb = aElem.split(' ');
 
@@ -456,12 +484,13 @@ let cubes = util.MapInput('./Day22TestInput2.txt', (aElem) => {
 for (let i = 0; i < cubes.length; i++)
   console.log(i + " " + JSON.stringify(cubes[i]) + " " + ComputeCubeArea(cubes[i]));
 
-//IntersectCubes(cubes[6], cubes[14]);
+//let ss = IntersectCubes(cubes[16], cubes[19]);
+//let ss2 = IntersectCubesSlow(cubes[16], cubes[19]);
 
-console.log(CountCubes(cubes, 50));
+console.log(CountCubes(cubes, 50, cubes.length));
 
 //IntersectCubes(cubes[0], cubes[1]);
 
 //console.log(CountAllCubes(cubes));
 
-console.log(CountOnCubes(cubes));
+console.log(CountOnCubes(cubes, cubes.length));
