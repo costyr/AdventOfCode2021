@@ -420,7 +420,6 @@ function CountOnCubes(aCubes, aCubesCount) {
     let ggOn = [];
     let ggOff = [];
     let ggOff2 = [];
-    let totalVV = 0;
     for (let j = 0; j < i; j++) {
       let ff = IntersectCubes(aCubes[i], aCubes[j]);
 
@@ -451,7 +450,7 @@ function CountOnCubes(aCubes, aCubesCount) {
          
           }
         }
-        if (!aCubes[j].state) {
+        else {
           if (!FindCube(mid, ggOff))
             ggOff.push(mid);
          }
@@ -462,12 +461,13 @@ function CountOnCubes(aCubes, aCubesCount) {
 
     ReduceIncludedCubes(ggOn);
 
+    let totalVV = 0;
     if (ggOff2.length > 0) {
       ReduceIncludedCubes(ggOff2);
 
       let uu = ComputeCubesArea(ggOff2);
 
-      console.log("Found on/off partial intersection: " + uu);
+      //console.log("Found on/off partial intersection: " + uu);
       totalVV += uu;
     }
 
@@ -486,7 +486,7 @@ function CountOnCubes(aCubes, aCubesCount) {
   return total;
 }
 
-let cubes = util.MapInput('./Day22TestInput3.txt', (aElem) => {
+let cubes = util.MapInput('./Day22TestInput4.txt', (aElem) => {
 
   let bb = aElem.split(' ');
 
