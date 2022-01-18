@@ -129,7 +129,7 @@ class DiracDiceQuantumGame {
       let result = this.PlayOneRound();
 
       if (result.ended)
-        break;
+        return result;
     }
   }
 }
@@ -149,16 +149,17 @@ for (let i = 0; i < kPrecomputed.length; i++)
   }
 
 while(multivers.length > 0) {
-   let next = multivers[0];  
+   let next = multivers.pop();  
    //console.log(multivers.length);
-   let result = next.PlayOneRound();
+   let result = next.Play();
    if (result.ended) {
 
-     if (result.winner >= 0)
+     if (result.winner >= 0) {
        winnerCount[result.winner] ++;
+       console.log(multivers.length + " " + winnerCount);
+     }
 
-     console.log(next.mId + " " + multivers.length + " " + winnerCount);
-     multivers.shift();
+     //multivers.pop();
      //break;
    }
 }
